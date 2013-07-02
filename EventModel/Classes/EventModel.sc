@@ -137,6 +137,18 @@ EventModel {
 			}}
 		);
 	}
+ // preferred - but still to test:
+	numSliderArray { | key, spec, decoratorFunc |
+		^this.ctlSpecView(key, this.makeSpec(key, spec), Slider,
+			{ | argKey, argView |
+				[
+					StaticText().string_(argKey),
+					argView.orientation_(\horizontal),
+					this.numberBox(key).maxWidth_(50).font_(Font.default.size_(10))
+				];
+			}
+		);
+	}
 
 	vknob { | key, spec |
 		^this.knob(key, spec, { | argKey, argView | VLayout(argView, StaticText().string_(argKey)); })

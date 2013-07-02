@@ -1,6 +1,6 @@
 
 (
-a = SynthModel({ WhiteNoise.ar(0.1) });
+a = SynthModel({ | test = 0, test2 = 10 | WhiteNoise.ar(0.1) });
 a.gui;
 )
 
