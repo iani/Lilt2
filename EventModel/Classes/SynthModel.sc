@@ -3,7 +3,7 @@ SynthModel {
 	var <template, <eventModel, <keys;
 	var <target, <addAction = \addToHead;
 	var <defName, <synthArray;
-	var >font;
+	classvar >font;
 
 	*initClass {
 		Class.initClassTree(ControlSpec);
@@ -202,4 +202,10 @@ SynthModel {
 		})
 		^view;
 	}
+
+	// ========== Patching
+	audioPatch { | name |
+		^AudioPatch(name ?? { defName.asSymbol }, this);
+	}
+
 }

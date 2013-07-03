@@ -4,6 +4,17 @@ a = SynthModel({ | test = 0, test2 = 10 | WhiteNoise.ar(0.1) });
 a.gui;
 )
 
+(
+a = SynthModel({ WhiteNoise.ar(0.1) });
+a.gui;
+)
+
+
+(
+a = SynthModel('default');
+a.gui;
+)
+
 a.start;
 
 a.release(5);
