@@ -14,10 +14,19 @@ The linking between Synth instances requires several things:
 
 For 1 and 2 we are going to re-use the mechanism devised in 2007, and copied here (classes Parameter, LinkedBus, BusLink etc). See documentation in: Documentation/Connecting Scripts (Implementation Notes).pdf
 
-For 3 we are going to use graph traversal. The classes used for 1 and 2 also provide an algorithm that checks for cycles in the link graph. So before adding any This means that the system will check before adding a link and will not permit to add any links which would create a cycle in the graph. So graph traversal will be safe.
+For 3 we are going to use graph traversal. The classes used for 1 and 2 also provide an algorithm that checks for cycles in the link graph. So before adding any This means that the system will check before adding a link and will not permit to add any links which would create a cycle in the graph. So graph traversal will be safe. The new algorithm to be implemented here will not use groups, but instead will always move the readers or writers in the correct position relative to each other using Node:moveAfter or Node:moveBefore, as follows:
 
-1. When adding a reader to a writer:
-Move the reader
+- When adding a reader to a writer:
+(a) Move the reader after the writer.
+(b) Move all readers of the reader after the reader.
+(c) Repeat (b) with each of the readers of the reader etc. until there are no more readers of readers.
+
+- When adding a writer to a reader:
+(a) Move the writer before the reader.
+(b) Move all writers of the writer after the writer.
+(c) Repeat (b) with each of the writers of the reader etc. until there are no more writers of writers.
+
+Note: To make sure that no audio is lost by accidentally moving a reader past the writer, one should collect all move messages in a list and send them to the server in one bundle. Possible?
 
 AbstractPatcher: holds patches by name and manages creation of links between patches.
 
