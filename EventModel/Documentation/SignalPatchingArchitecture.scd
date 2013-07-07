@@ -4,8 +4,6 @@
 
 The algorithms for cycle-checking and signal-diverting bus creation of Lilt1 as well as the class organization are good solutions, so they will be adopted here. Those parts shich relate to the gui will be removed.
 
-Architecture overview:
-
 === Principles ===
 
 The output of a Synth (w) is linked to an input of another synth (r) via a Bus (l).
@@ -18,7 +16,6 @@ However, when many readers nr want to share a single bus with many writers nw, c
 Tbe handling of the synth processes (w and r) is implemented through classes ControlPatch (for control busses) and AudioPatch (for audio busses).
 
 The handling of the bus and its connections to synth processes is handled by class LinkedBus. A LinkedBus holds a single bus, one or more writers (in dictionary "inputs"), and one or more readers (in dictionary "outputs"). Thus, theoretically the following configurations are possible:
-
 
 1. one-to-one:
 
@@ -74,7 +71,7 @@ Thus, the class components involved in the general scheme of many-to-many links 
 
 1. ControlPatch (for control rate synths) and AudioPatch (for audio rate synths): handle the processes of "writer" and "reader" synths.
 
-2. Output: links the output of a synth to a LinkedBus
+2. Output: links the output of a synth to a LinkedBus instance.
 
 3. LinkedBus: links one or more Output/BusLink instances to one or more Input/Buslink instances
 
