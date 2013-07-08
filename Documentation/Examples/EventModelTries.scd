@@ -65,7 +65,6 @@ w.view.layout = HLayout(
 	} ! 16)
 )
 )
-)
 
 e.disableMIDI;
 e.disableMIDI(\amp2);

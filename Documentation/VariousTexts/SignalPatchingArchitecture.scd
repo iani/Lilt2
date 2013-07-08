@@ -69,22 +69,22 @@ A direct consequence of the above rules is that whatever the number and complexi
 
 Thus, the class components involved in the general scheme of many-to-many links between synths are:
 
-1. ControlPatch (for control rate synths) and AudioPatch (for audio rate synths): handle the processes of "writer" and "reader" synths.
+1. ControlPatch (for control rate synths) and AudioPatch (for audio rate synths): handle the processes of "writer" and "reader" synths, and provide variables holding a dictionary of inputs (Input instances) and an output (Output instance).
 
 2. Output: links the output of a synth to a LinkedBus instance.
 
-3. LinkedBus: links one or more Output/BusLink instances to one or more Input/Buslink instances
+3. LinkedBus: links one or more Output or BusLink instances to one or more Input or Buslink instances
 
 4. Input: links one LinkedBus instance to an input of a synth.
 
-5. BusLink: is inserted between Output and LinkedBus or between LinkedBus and Input to copy bus contents as required by the rule explained above.
+5. BusLink: is inserted between Output and LinkedBus or between LinkedBus and Input to copy bus contents as required by the rule explained above. (Implementation note: Can be implemented as subclass of AudioPatch and ControlPatch?
 
 
 === Classes ===
 
-* ComtrolPatch, AudioPatch:
+* ComtrolPatch, AudioPatch (or just one class: SynthPatch?)
 
-Holds the SynthModel which produces the output, and inputs and output for linking it to other patches.
+Holds the SynthModel which produces the output, plus inputs and output for linking it to other patches.
 
 Inputs are implemented as a Dictionary (Array???) of Input instances.
 
@@ -95,15 +95,14 @@ Output is implemented as a single Output instance.
 Superclass of Input and Output.
 Its subclasses implement the linking of an input or output to other outputs or inputs.
 
-
-var <>patch;	// the Audio/ControlPatch to which this parameter belongs
+var <>patch;	// the Audio/Control/SynthPatch to which this parameter belongs
 
 * Input (new class): subclass of Link, implements input link
 
 var <input;		// a LinkedBus with links to all my writers
 var <numChannels = 1;
 
-* OutputParameter : subclass of Link, implements output -> rename to Output
+* Output : subclass of Link, implements output (Previously: OutputParameter)
 
 var <name;		// name of parameter controlled. Is set by name_
 var <output; 	// a LinkedBus with links to all my readers
@@ -111,6 +110,13 @@ var <output; 	// a LinkedBus with links to all my readers
 * LinkedBus : Bus
 var <writers; // array of parameters of scripts writing to this bus
 var <readers; // array of parameters of scripts reading from this bus
+
+=== Bus instance creation and connections to inputs and outputs ===
+
+Bus
+
+
+
 
 
 */
