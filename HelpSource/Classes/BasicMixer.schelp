@@ -1,42 +1,47 @@
 TITLE:: BasicMixer
 summary:: A very simple mixer with amplitude control for the final audio outputs.
 categories:: Libraries>Lilt2
-related:: Classes/SynthModel, Reference/SomeRelatedStuff, etc.
+related:: Classes/EventModel, Classes/SynthModel
 
 DESCRIPTION::
-Creates a user interface for regulating the amplitude of the first 8 audio busses of scsynth. ... etc.
+Creates a user interface for regulating the amplitude of the first 8 audio busses of scsynth. 
 
+This is a very small class showing how to use EventModel as a superclass. Both the GUI and the synth of the BasicMixer must be started by sending messages to an instance.  A variant of BasicMixer with more convenient methods, and auto-(re)start of the synth is in planning after SynthModel and SynthPatch classes have been implemented.  
+
+See example at end. 
 
 CLASSMETHODS::
 
 METHOD:: new
-(describe method here)
+Create a new instance of BasicMixer. Do not create GUI yet. To make the mixer's window use instance method makeWindow. 
 
 ARGUMENT:: numChans
-(describe argument here)
+Number of output channels of the mixer. Default: 2
 
 ARGUMENT:: maxLevel
-(describe argument here)
+Maximum amplitude level that will be visible in the mixer's GUI controls. Default: 1
 
-returns:: (describe returnvalue here)
+returns:: A new instance of BasicMixer
 
 
 INSTANCEMETHODS::
 
 METHOD:: numChans
-(describe method here)
+Return the current number of output channels of the mixer.
 
-returns:: (describe returnvalue here)
+returns:: value of variable numChans
 
 METHOD:: makeKeys
-(describe method here)
+Create the names of the keys used by the mixer to create controls of the mixing synthdef as well as for the GUI display. 
 
-returns:: (describe returnvalue here)
+returns:: An array of symbols: ['amp1', 'amp2', ... 'ampN'] where N is the number of channels. 
 
 METHOD:: start
-(describe method here)
+If the mixer is not already running, create a new Synth instance that multiplies the inputs of the mixer with the values of the user-controlled amplitude controls, and sends these to the output. 
 
-returns:: (describe returnvalue here)
+The synth is added after the root node.  Since all other nodes are usually added inside the root node, the basic mixer will always process the output of other nodes.
+
+returns:: The mixing Synth instance.
 
 METHOD:: init
 (describe method here)
@@ -90,5 +95,5 @@ returns:: (describe returnvalue here)
 EXAMPLES::
 
 code::
-(some example code)
+Server.default.waitForBoot({ BasicMixer().makeWindow.start;});
 ::

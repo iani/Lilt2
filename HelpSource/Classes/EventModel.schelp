@@ -1,0 +1,393 @@
+TITLE:: EventModel
+summary:: Provide interface for setting an Event's values. Create default GUI and generate MIDI and OSC functions for setting these values, using default or custeom ControlSpecs. 
+categories:: Libraries>Lilt2
+related:: Classes/BasicMixer, Classes/SynthModel
+
+DESCRIPTION::
+An EventModel holds a single event and sets the events values with the method set(key, value). 
+...
+
+
+CLASSMETHODS::
+
+METHOD:: new
+Create a new instance of EventModel, using event. 
+
+ARGUMENT:: event
+The event whose values are updated by EventModel.
+
+returns:: A new instance of EventModel using event as its content
+
+INSTANCEMETHODS::
+
+METHOD:: numSliderArray
+Create and return an array consisting of a StaticString, a Slider and a NumberBox, for diaplsying and setting a value in the event. 
+
+ARGUMENT:: key
+A Symbol. The key of the value to set. 
+
+ARGUMENT:: spec
+A spec for mapping the values 0..1 returned by the slider to the desired range of values. 
+
+ARGUMENT:: decoratorFunc
+A function that processes the 
+
+returns:: (describe returnvalue here)
+
+METHOD:: labeledNumberBox
+(describe method here)
+
+ARGUMENT:: key
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: fader
+(describe method here)
+
+ARGUMENT:: key
+(describe argument here)
+
+ARGUMENT:: spec
+(describe argument here)
+
+ARGUMENT:: decoratorFunc
+(describe argument here)
+
+ARGUMENT:: label
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: put
+(describe method here)
+
+ARGUMENT:: key
+(describe argument here)
+
+ARGUMENT:: value
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: knob
+(describe method here)
+
+ARGUMENT:: key
+(describe argument here)
+
+ARGUMENT:: spec
+(describe argument here)
+
+ARGUMENT:: decoratorFunc
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: makeSpec
+(describe method here)
+
+ARGUMENT:: key
+(describe argument here)
+
+ARGUMENT:: spec
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: vknob
+(describe method here)
+
+ARGUMENT:: key
+(describe argument here)
+
+ARGUMENT:: spec
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: enableMIDI
+(describe method here)
+
+ARGUMENT:: key
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: specs
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: addMIDIarray
+(describe method here)
+
+ARGUMENT::  ... keysNums
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: addOSCarray
+(describe method here)
+
+ARGUMENT::  ... keysMsg
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: numSlider
+(describe method here)
+
+ARGUMENT:: key
+(describe argument here)
+
+ARGUMENT:: spec
+(describe argument here)
+
+ARGUMENT:: decoratorFunc
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: slider
+(describe method here)
+
+ARGUMENT:: key
+(describe argument here)
+
+ARGUMENT:: spec
+(describe argument here)
+
+ARGUMENT:: decoratorFunc
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: connectMIDIFunc
+(describe method here)
+
+ARGUMENT:: midiFunc
+(describe argument here)
+
+ARGUMENT:: key
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: enableOSC
+(describe method here)
+
+ARGUMENT:: key
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: makeWindow
+(describe method here)
+
+
+Example 1: 
+
+code::
+EventModel((freq: 500, amp: 0.3)).makeWindow
+::
+
+Example 2:
+code::
+(
+e = EventModel((freq: 500, amp: 0.3));
+{ | i | e.makeWindow.bounds = Rect(i + 400, i * 200 + 50, 300, 200) } ! 3;
+)
+::
+
+ARGUMENT::  ... widgetSpecs
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: makeView
+(describe method here)
+
+ARGUMENT:: viewClass
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: numberBox
+(describe method here)
+
+ARGUMENT:: key
+(describe argument here)
+
+ARGUMENT:: decoratorFunc
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: disableMIDI
+(describe method here)
+
+ARGUMENT:: key
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: addOSC
+(describe method here)
+
+ARGUMENT:: key
+(describe argument here)
+
+ARGUMENT:: spec
+(describe argument here)
+
+ARGUMENT:: path
+(describe argument here)
+
+ARGUMENT:: srcID
+(describe argument here)
+
+ARGUMENT:: recvPort
+(describe argument here)
+
+ARGUMENT:: argTemplate
+(describe argument here)
+
+ARGUMENT:: dispatcher
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: event
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: addEventListener
+(describe method here)
+
+ARGUMENT:: listener
+(describe argument here)
+
+ARGUMENT:: key
+(describe argument here)
+
+ARGUMENT:: action
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: button
+(describe method here)
+
+ARGUMENT:: key
+(describe argument here)
+
+ARGUMENT:: states
+(describe argument here)
+
+ARGUMENT:: decoratorFunc
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: connectOSCFunc
+(describe method here)
+
+ARGUMENT:: oscFunc
+(describe argument here)
+
+ARGUMENT:: key
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: simpleGuiLayout
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: ctlSpecView
+(describe method here)
+
+ARGUMENT:: key
+(describe argument here)
+
+ARGUMENT:: spec
+(describe argument here)
+
+ARGUMENT:: viewClass
+(describe argument here)
+
+ARGUMENT:: decoratorFunc
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: addMIDI
+(describe method here)
+
+ARGUMENT:: key
+(describe argument here)
+
+ARGUMENT:: spec
+(describe argument here)
+
+ARGUMENT:: msgNum
+(describe argument here)
+
+ARGUMENT:: chan
+(describe argument here)
+
+ARGUMENT:: msgType
+(describe argument here)
+
+ARGUMENT:: srcID
+(describe argument here)
+
+ARGUMENT:: argTemplate
+(describe argument here)
+
+ARGUMENT:: dispatcher
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: funcMakeWindow
+(describe method here)
+
+ARGUMENT:: func
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: vslider
+(describe method here)
+
+ARGUMENT:: key
+(describe argument here)
+
+ARGUMENT:: spec
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: updateAll
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: disableOSC
+(describe method here)
+
+ARGUMENT:: key
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+
+EXAMPLES::
+
+code::
+(some example code)
+::

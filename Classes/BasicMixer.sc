@@ -1,4 +1,4 @@
-
+/* IZ Jul 8, 2013 (7:41 PM) */
 
 
 BasicMixer : EventModel {
@@ -37,6 +37,7 @@ BasicMixer : EventModel {
 			.layout = HLayout(
 				*(
 					(this.makeKeys collect: { | key, i | this.fader(key, label: i.asString) })
+					/*
 					++
 					VLayout(
 						StaticText().string_("this"),
@@ -44,21 +45,22 @@ BasicMixer : EventModel {
 						StaticText().string_("a"),
 						StaticText().string_("test")
 					)
+					*/
 				)
 			)
 		})
 	}
 
 	start {
-		if (synth.notNil) { ^this };
-		synth = {
+		if (synth.notNil) { ^synth };
+		^synth = {
 			var input, output;
 			input = In.ar(0, numChans);
 			output = keys collect: { | key, i |
 				input[i] * key.kr(0)
 			};
 			ReplaceOut.ar(0, output);
-		}.play(Server.default, addAction: \addToTail, args:
+		}.play(Server.default, addAction: \addAfter, args:
 			keys.collect({ | key, i |
 				[key, event[key]];
 			}).flat;

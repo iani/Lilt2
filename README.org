@@ -1,10 +1,10 @@
 #+TITLE: Lilt2
 
 
-New take on SuperCollider tools: GUI creation, Synth patching, Mixer, Buffer and other config management. 
+New take on some SuperCollider tools: GUI creation, Synth patching, Mixer, Buffer and other config management. 
 
-Folder HelpSource contains files for the SuperCollider help system
+Folder "HelpSource" contains files for the SuperCollider help system
 
-Folder Documentation contains other documentation in pdf, rtfd and scd format. 
+Folder "Documentation" contains other documentation in pdf, rtfd and scd format. 
 
 IZ Jul 8, 2013 (7:05 PM)

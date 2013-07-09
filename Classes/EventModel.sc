@@ -35,6 +35,9 @@ EventModel {
 		}{
 			layout = VLayout;
 		};
+		if (widgetSpecs.size == 0) {
+			widgetSpecs = event.keys.asArray.sort collect: [\numSlider, _]
+		};
 		window.view.layout = layout.new(
 			*(widgetSpecs collect: { | ws | this.perform(*ws) })
 		);
@@ -138,7 +141,7 @@ EventModel {
 		);
 	}
  // preferred - but still to test:
-	numSliderArray { | key, spec, decoratorFunc |
+	numSliderWidgets { | key, spec, decoratorFunc |
 		^this.ctlSpecView(key, this.makeSpec(key, spec), Slider,
 			{ | argKey, argView |
 				[
