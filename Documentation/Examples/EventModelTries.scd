@@ -8,6 +8,17 @@ e.makeWindow(
 )
 
 f = EventModel((freq: 12345, amp: 0.5))
+
+f.makeWindow;
+
+f.addMIDI(\freq, nil, 1, 0);
+f.addMIDI(\amp, nil, 2, 0);
+
+f.addMIDI(\freq, nil, 1, 0);
+
+
+
+
 Window("test1", Rect(0, 0, 300, 200)).front.view.layout = f.simpleGuiLayout;
 Window("test1", Rect(330, 0, 300, 200)).front.view.layout = f.simpleGuiLayout;
 

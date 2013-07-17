@@ -1,0 +1,257 @@
+TITLE:: SynthModel
+summary:: Provide specs and gui for starting, stopping, releasing a synth and for setting its parameters. 
+categories:: Libraries>Lilt2
+related:: Classes/EventModel
+
+DESCRIPTION::
+
+Example: 
+code::
+SynthModel({ WhiteNoise.ar(0.1) }).gui;
+::
+
+CLASSMETHODS::
+
+METHOD:: initClass
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: font
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: new
+(describe method here)
+
+ARGUMENT:: template
+(describe argument here)
+
+ARGUMENT:: eventModel
+(describe argument here)
+
+ARGUMENT:: keys
+(describe argument here)
+
+ARGUMENT:: target
+(describe argument here)
+
+ARGUMENT:: addAction
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+
+INSTANCEMETHODS::
+
+METHOD:: makeEvent
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: hasSynth
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: eventModel
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: addSynthDef
+(describe method here)
+
+ARGUMENT:: synthDef
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: getArgs
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: keys
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: target
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: release
+(describe method here)
+
+ARGUMENT:: fadeTime
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: makeOutputControls
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: init
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: synthArray
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: stop
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: template
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: makeStateControls
+(describe method here)
+
+ARGUMENT:: argKeys
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: makeOutputPane
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: connectKey
+(describe method here)
+
+ARGUMENT:: key
+(describe argument here)
+
+ARGUMENT:: event
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: setGroup
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: connectKeys
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: run
+(describe method here)
+
+ARGUMENT:: flag
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: font
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: addView
+(describe method here)
+
+ARGUMENT:: viewClass
+(describe argument here)
+
+ARGUMENT::  ... messagesActions
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: synthDesc
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: start
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: makeParameterControls
+(describe method here)
+
+ARGUMENT:: argKeys
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: audioPatch
+(describe method here)
+
+ARGUMENT:: name
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: getControlsFromSynthDesc
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: free
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: toggle
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: gui
+(describe method here)
+
+ARGUMENT:: argKeys
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: set
+(describe method here)
+
+ARGUMENT:: key
+(describe argument here)
+
+ARGUMENT:: value
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: addAction
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: startSynth
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: defName
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+
+EXAMPLES::
+
+code::
+SynthModel({ WhiteNoise.ar(0.1) }).gui;
+::

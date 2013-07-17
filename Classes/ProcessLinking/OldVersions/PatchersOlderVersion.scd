@@ -1,4 +1,6 @@
-/* IZ Jul 3, 2013 (11:36 AM)
+ /* IZ Jul 3, 2013 (11:36 AM)
+
+This is a first version. As of Jul 9, 2013 (8:33 PM) rewriting this.
 
 Classes for linking between Synths (audio or control rate) and between routines that change parameters of synths or write to events.
 

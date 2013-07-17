@@ -15,17 +15,17 @@ However, when many readers nr want to share a single bus with many writers nw, c
 
 Tbe handling of the synth processes (w and r) is implemented through classes ControlPatch (for control busses) and AudioPatch (for audio busses).
 
-The handling of the bus and its connections to synth processes is handled by class LinkedBus. A LinkedBus holds a single bus, one or more writers (in dictionary "inputs"), and one or more readers (in dictionary "outputs"). Thus, theoretically the following configurations are possible:
+The handling of the bus and its connections to synth processes is handled by class IOBus. A IOBus holds a single bus, one or more writers (in dictionary "inputs"), and one or more readers (in dictionary "outputs"). Thus, theoretically the following configurations are possible:
 
 1. one-to-one:
 
-writer1 -> linkedbus -> reader1
+writer1 -> IOBus -> reader1
 
 2. one-to-many:
 
                       / reader1
                      /
-writer1 -> linkedbus -- reader 2
+writer1 -> IOBus -- reader 2
                      \
                       \ reader 3
 
@@ -33,7 +33,7 @@ writer1 -> linkedbus -- reader 2
 
 writer1 \
          \
-writer2 -- linkedbus -> reader1
+writer2 -- IOBus -> reader1
          /
 writer3 /
 
@@ -41,7 +41,7 @@ writer3 /
 
 writer1 \             / reader1
          \           /
-writer2 -- linkedbus -- reader2
+writer2 -- IOBus -- reader2
          /           \
 writer3 /             \ reader3
 
@@ -59,7 +59,15 @@ B Conversely, if an output bus A of a writer w has more than one writers, then t
 2. Remove w from the inputs of A.
 3. Copy the contents of B to A.
 
-The copying of contents (signal) from one bus to another is managed by class BusLink.
+The copying of contents (signal) from one bus to another is managed by class BusBranch. A BusBranch creates a copy of the signal from one bus on a new bus which is the new "branch" bus.
+
+    Bus 1
+     |
+     |\
+     | \
+     |  \ Bus 2 ("branch")
+     |   |
+     |   |
 
 A direct consequence of the above rules is that whatever the number and complexity of interconnections added, the resulting graph will always have busses interconnected in one of the following two ways:
 
@@ -69,62 +77,56 @@ A direct consequence of the above rules is that whatever the number and complexi
 
 Thus, the class components involved in the general scheme of many-to-many links between synths are:
 
-1. ControlPatch (for control rate synths) and AudioPatch (for audio rate synths): handle the processes of "writer" and "reader" synths, and provide variables holding a dictionary of inputs (Input instances) and an output (Output instance).
+1. SynthPatch: handle the processes of "writer" and "reader" synths, and provide variables holding inputs (Input instances), outputs (Output instance), and ControlMappers for mapping Controls to Buses.
 
-2. Output: links the output of a synth to a LinkedBus instance.
+2. Output: links the output of a synth to a IOBus instance.
 
-3. LinkedBus: links one or more Output or BusLink instances to one or more Input or Buslink instances
+3. IOBus: links one or more Output or BusBranch instances to one or more Input or BusBranch instances
 
-4. Input: links one LinkedBus instance to an input of a synth.
+4. Input: links one IOBus instance to an input of a synth.
 
-5. BusLink: is inserted between Output and LinkedBus or between LinkedBus and Input to copy bus contents as required by the rule explained above. (Implementation note: Can be implemented as subclass of AudioPatch and ControlPatch?
+5. BusBranch: is inserted between Output and IOBus or between IOBus and Input to copy bus contents as required by the rule explained above. (Implementation note: Can be implemented as subclass of AudioPatch and ControlPatch?
 
 
 === Classes ===
 
-* ComtrolPatch, AudioPatch (or just one class: SynthPatch?)
+* SynthPatch
 
-Holds the SynthModel which produces the output, plus inputs and output for linking it to other patches.
+Holds the SynthModel which produces the output, plus inputs, outputs and controls for linking it to other patches.
 
-Inputs are implemented as a Dictionary (Array???) of Input instances.
+Inputs are implemented as an Array of Input instances.
 
-Output is implemented as a single Output instance.
+Outputs are implemented as an Array of Output instances.
 
-* Link (previously Parameter class)
+* ControlMapper (previously Parameter class)
 
-Superclass of Input and Output.
-Its subclasses implement the linking of an input or output to other outputs or inputs.
+Superclass of Input, Output.
+Its subclasses implement the linking of an input or output to other outputs or inputs via busses.
 
-var <>patch;	// the Audio/Control/SynthPatch to which this parameter belongs
+var <patch;	// the Audio/Control/SynthPatch to which this parameter belongs
 
-* Input (new class): subclass of Link, implements input link
 
-var <input;		// a LinkedBus with links to all my writers
-var <numChannels = 1;
+Note: IODesc also holds variables defining the rate, the numberOfChannels and the UGen as well as the name of the Control which sets its value. The name of the control is stored in startingChannel.
 
-* Output : subclass of Link, implements output (Previously: OutputParameter)
+var <bus;		// a IOBus with links to all my writers
+var <controlName; // An instance of ControlName, from the synthDesc of the model.
 
-var <name;		// name of parameter controlled. Is set by name_
-var <output; 	// a LinkedBus with links to all my readers
+* Input
 
-* LinkedBus : Bus
+var <descriptor; // An instance of IODesc, from the synthDesc of the model.
+
+* Output
+
+// var <name;		// name of parameter controlled. Is set by name_
+var <output; 	// a IOBus with links to all my readers
+
+
+* IOBus : Bus
 var <writers; // array of parameters of scripts writing to this bus
 var <readers; // array of parameters of scripts reading from this bus
 
 === Bus instance creation and connections to inputs and outputs ===
 
-Bus
-
-
-
-
 
 */
-
-
-AbstractPatch {
-	var inputs; // dictionary (array?) of Parameters -> rename class to Input
-    var output; // Instance of OutputParameter -> Rename class to Output
-
-}
 

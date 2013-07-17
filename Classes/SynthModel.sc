@@ -1,9 +1,18 @@
 
 SynthModel {
-	var <template, <eventModel, <keys;
-	var <target, <addAction = \addToHead;
-	var <defName, <synthArray;
-	classvar >font;
+	var <template; // a SynthDef name, SynthDef, or Function from which the synths are created
+	var <eventModel; // an EventModel containing keys and parameter values for synth controls
+	var <connectors; // Array of ControlConnectors handling mapping, bus patching, buffer setting
+	var <target;     // Target to which synths are added
+	var <addAction = \addToHead; // Where to add the synths relative to the target
+	var <defName;    // The name of the SynthDef that creates synths for this model.
+	var <synthDef;
+	var <synthDesc;  // Derived from the SynthDef. Used by SynthPatch to create inputs and outputs
+	var <synthArray; /* Array of synths created by this model.
+	Several synths can be running, because one may start a new synth while
+	the previous has been released but not yet freed. Communication is kept
+	alive for all synths created by me, until they are freed. */
+	classvar >font; // font for gui elements
 
 	*initClass {
 		Class.initClassTree(ControlSpec);
@@ -13,54 +22,47 @@ SynthModel {
 		])
 	}
 
-	*new { | template, eventModel, keys, target, addAction = \addToHead |
-		^this.newCopyArgs(template, eventModel ?? { () }, keys, target.asTarget, addAction).init;
+	*new { | template, eventModel, target, addAction = \addToHead |
+		^this.newCopyArgs(template, eventModel ?? { () }, target.asTarget, addAction).init;
 	}
 
 	init {
 		if (template.isKindOf(Symbol) or: { template.isKindOf(String) }) {
 			defName = template;
 		}{
-			this.addSynthDef(template);
+			if (synthDef.isKindOf(Function)) { synthDef = synthDef.asFlexSynthDef; };
+			synthDef.add;
+			defName = synthDef.name.asSymbol;
 		};
 		if (eventModel.isKindOf(Event)) {
 			eventModel = EventModel(eventModel)
 		};
-		if (eventModel.event.size == 0) { this.makeEvent } { this.connectKeys; };
+		this.makeControls;
 		synthArray = [];
 	}
 
-	addSynthDef { | synthDef |
-		if (synthDef.isKindOf(Function)) {
-			synthDef = synthDef.asFlexSynthDef(name: SystemSynthDefs.generateTempName);
-		};
-		synthDef.add;
-		defName = synthDef.name.asSymbol;
-	}
-
-	makeEvent {
-		var event, name;
+	makeControls {
+		var event, nameString, controls, inputs, outputs, nameSymbol, control, descriptor;
 		event = eventModel.event;
-		this.getControlsFromSynthDesc do: { | c | event[c.name] = c.defaultValue };
-		this.connectKeys;
-	}
-
-	getControlsFromSynthDesc {
-		var desc, name;
-		desc = SynthDescLib.global[defName];
-		if (desc.notNil) {
-			^desc.controls select: { | c |
-				name = c.name.asString;
-				name[..1] != "i_" and: { name != "gate" }
+		synthDesc = SynthDescLib.global[defName];
+		controls = synthDesc.controls;
+		inputs = synthDesc.inputs;
+		outputs = synthDesc.outputs;
+		controls.collect({ | cn | cn.name.asString; }) do: { | nameString, i |
+			if (nameString[..1] != "i_" and: { nameString != "gate" }) {
+				control = controls[i];
+				nameSymbol = control.name;
+				this.addNotifier(event, nameSymbol, { | value | this.set(nameSymbol, value) });
+				case
+				{ nameString[..2] == "buf" } { connectors = connectors add: BufferConnector(this, control); }
+				{ (descriptor = inputs.detect({ | i | i.startingChannel === nameSymbol })).notNil } {
+					connectors = connectors add: InputConnector(this, control, descriptor)
+				}
+				{ (descriptor = outputs.detect({ | i | i.startingChannel === nameSymbol })).notNil } {
+						connectors = connectors add: OutputConnector(this, control, descriptor)
+				}
+				{ 	connectors = connectors add: ControlConnector(this, control) }
 			}
-		}{ ^nil };
-	}
-
-	connectKeys {
-		var event;
-		event = eventModel.event;
-		(keys ?? { event.keys }) do: { | key |
-			this.addNotifier(event, key, { | value | this.set(key, value) })
 		}
 	}
 
@@ -99,7 +101,7 @@ SynthModel {
 		this.changed(\synthStarted);
 	}
 
-	getArgs {
+	getArgs { | keys |
 		^eventModel.event.getPairs(keys);
 	}
 
@@ -120,16 +122,17 @@ SynthModel {
 	gui { | argKeys |
 		// basic gui - under development
 		var rows, layout;
-		argKeys ?? { argKeys = keys ?? { eventModel.event.keys.asArray.sort } };
-		rows = this.makeParameterControls(argKeys);
-		rows[0] = rows[0] add: [ListView().minWidth_(120), rows: rows.size];
+		rows = this.makeControlsGui(argKeys);
+		// rows[0] = rows[0] add: [ListView().minWidth_(120), rows: rows.size];
 		layout = GridLayout.rows(
 			[],
 			*rows
 		).addSpanning(this.makeStateControls, 0, 0, 1, 3)
-		.addSpanning(this.makeOutputControls, 0, 3, 1, 1);
+		// .addSpanning(this.makeOutputControls, 0, 3, 1, 1);
 		^Window(defName, Rect(400, 400, 400, rows.size + 1 * 20 + 10)).front.view.layout = layout;
 	}
+
+	makeControlsGui { ^connectors collect: _.makeGui; }
 
 	makeStateControls { | argKeys |
 		^HLayout(
@@ -160,7 +163,7 @@ SynthModel {
 			.enabled_(this.hasSynth)
 		)
 	}
-
+/*
 	makeOutputControls {
 		^HLayout(
 			StaticText().string_("outputs").font_(this.font),
@@ -169,29 +172,17 @@ SynthModel {
 			.decimals_(0).step_(1).clipLo_(-8).clipHi_(8).fixedWidth_(25).font_(this.font),
 		)
 	}
-
+*/
 	font {
 		font ?? { font = Font.default.size_(10) };
 		^font;
 	}
-
-	makeParameterControls { | argKeys |
-		^argKeys collect: { | key |
-			eventModel.numSlider(key, decoratorFunc: { | argKey, argView |
-				[
-					StaticText().string_(argKey).font_(this.font),
-					argView.orientation_(\horizontal).maxHeight_(20),
-					eventModel.numberBox(key).fixedWidth_(50).font_(this.font)
-				];
-			})
-		}
-	}
-
+/*
 	makeOutputPane {
 		^ListView().fixedWidth_(150).minHeight_(50)
 	}
-
-	setGroup { "not yet implemented".postln; }
+*/
+//	setGroup { "not yet implemented".postln; }
 
 	addView { | viewClass ... messagesActions |
 		var view;
