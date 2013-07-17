@@ -4,12 +4,12 @@
 
 + SynthDef {
 
-	synthModel { | eventModel, keys, target, addAction = \addToHead |
-		^SynthModel(this, eventModel, keys, target, addAction)
+	synthModel { | eventModel, target, addAction = \addToHead, specs |
+		^SynthModel(this, eventModel, target, addAction, specs)
 	}
 
-	synthGui { | eventModel, keys, target, addAction = \addToHead |
-		^this.synthModel(eventModel, keys, target, addAction).gui;
+	synthGui { | eventModel, target, addAction = \addToHead, specs |
+		^this.synthModel(eventModel, target, addAction, specs).gui;
 	}
 
 }

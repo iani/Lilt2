@@ -4,8 +4,12 @@ EventModel {
 	var <event;
 	var <specs;
 
-	*new { | event |
-		^this.newCopyArgs(event ?? { () }, ())
+	*new { | event, specs |
+		^this.newCopyArgs(event ?? { () }, specs ?? { () })
+	}
+
+	addSpecs { | argSpecs |
+		argSpecs keysValuesDo: { | key, value | specs[key] = value.asSpec; };
 	}
 
 	put { | key, value |

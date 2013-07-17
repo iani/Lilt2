@@ -23,11 +23,14 @@ SynthModel {
 		])
 	}
 
-	*new { | template, eventModel, target, addAction = \addToHead |
-		^this.newCopyArgs(template, eventModel ?? { () }, target.asTarget, addAction).init;
+	*new { | template, eventModel, target, addAction = \addToHead, specs |
+		^this.newCopyArgs(
+			template, (eventModel ?? { () }),
+			target.asTarget, addAction
+		).init(specs);
 	}
 
-	init {
+	init { | specs |
 		if (template.isKindOf(Symbol) or: { template.isKindOf(String) }) {
 			defName = template.asSymbol;
 			synthDesc = SynthDescLib.global.at(defName);
@@ -44,6 +47,7 @@ SynthModel {
 		if (eventModel.isKindOf(Event)) {
 			eventModel = EventModel(eventModel)
 		};
+		eventModel.addSpecs(specs);
 		this.makeControls;
 		synthArray = [];
 	}
