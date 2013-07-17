@@ -49,16 +49,18 @@ SynthModel {
 	}
 
 	makeControls {
-		var event, controls, inputs, outputs, nameSymbol, control, descriptor;
+		var event, controls, inputs, outputs, control, descriptor;
 		event = eventModel.event;
 		controls = synthDesc.controls;
 		inputs = synthDesc.inputs;
 		outputs = synthDesc.outputs;
 		controls.collect({ | cn | cn.name.asString; }) do: { | nameString, i |
 			if (nameString[..1] != "i_" and: { nameString != "gate" }) {
+				var nameSymbol;
 				control = controls[i];
 				nameSymbol = control.name;
 				event[nameSymbol] = control.defaultValue;
+				this.addNotifier(event, nameSymbol, { | value | this.set(nameSymbol, value) });
 				case
 				{ nameString[..2] == "buf" } {
 					connectors = connectors add: BufferConnector(this, control);
@@ -70,9 +72,9 @@ SynthModel {
 					connectors = connectors add: OutputConnector(this, control, descriptor)
 				}
 				{ 	connectors = connectors add: ControlConnector(this, control) }
-			}
+			};
 		};
-		event keysDo: { | key | this.addNotifier(event, key, { | value | this.set(key, value) }); };
+//		event keysDo: { | key | this.addNotifier(event, key, { | value | this.set(key, value) }); };
 	}
 
 	set { | key, value |
