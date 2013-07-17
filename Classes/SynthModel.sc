@@ -2,16 +2,17 @@
 SynthModel {
 	var <template; // a SynthDef name, SynthDef, or Function from which the synths are created
 	var <eventModel; // an EventModel containing keys and parameter values for synth controls
-	var <connectors; // Array of ControlConnectors handling mapping, bus patching, buffer setting
 	var <target;     // Target to which synths are added
 	var <addAction = \addToHead; // Where to add the synths relative to the target
 	var <defName;    // The name of the SynthDef that creates synths for this model.
 	var <synthDef;
 	var <synthDesc;  // Derived from the SynthDef. Used by SynthPatch to create inputs and outputs
+	var <connectors; // Array of ControlConnectors handling mapping, bus patching, buffer setting
 	var <synthArray; /* Array of synths created by this model.
 	Several synths can be running, because one may start a new synth while
 	the previous has been released but not yet freed. Communication is kept
 	alive for all synths created by me, until they are freed. */
+
 	classvar >font; // font for gui elements
 
 	*initClass {
@@ -28,11 +29,17 @@ SynthModel {
 
 	init {
 		if (template.isKindOf(Symbol) or: { template.isKindOf(String) }) {
-			defName = template;
+			defName = template.asSymbol;
+			synthDesc = SynthDescLib.global.at(defName);
 		}{
-			if (synthDef.isKindOf(Function)) { synthDef = synthDef.asFlexSynthDef; };
+			if (template.isKindOf(Function)) {
+				synthDef = template.asFlexSynthDef;
+			}{
+				synthDef = template;
+			};
 			synthDef.add;
 			defName = synthDef.name.asSymbol;
+			synthDesc = synthDef.asSynthDesc;
 		};
 		if (eventModel.isKindOf(Event)) {
 			eventModel = EventModel(eventModel)
@@ -44,7 +51,6 @@ SynthModel {
 	makeControls {
 		var event, nameString, controls, inputs, outputs, nameSymbol, control, descriptor;
 		event = eventModel.event;
-		synthDesc = SynthDescLib.global[defName];
 		controls = synthDesc.controls;
 		inputs = synthDesc.inputs;
 		outputs = synthDesc.outputs;
@@ -52,6 +58,7 @@ SynthModel {
 			if (nameString[..1] != "i_" and: { nameString != "gate" }) {
 				control = controls[i];
 				nameSymbol = control.name;
+				event[nameSymbol] = control.defaultValue;
 				this.addNotifier(event, nameSymbol, { | value | this.set(nameSymbol, value) });
 				case
 				{ nameString[..2] == "buf" } { connectors = connectors add: BufferConnector(this, control); }
@@ -59,7 +66,7 @@ SynthModel {
 					connectors = connectors add: InputConnector(this, control, descriptor)
 				}
 				{ (descriptor = outputs.detect({ | i | i.startingChannel === nameSymbol })).notNil } {
-						connectors = connectors add: OutputConnector(this, control, descriptor)
+					connectors = connectors add: OutputConnector(this, control, descriptor)
 				}
 				{ 	connectors = connectors add: ControlConnector(this, control) }
 			}
@@ -89,7 +96,7 @@ SynthModel {
 		synth = Synth(defName,
 			args: this.getArgs,
 			target: target,
-			addAction: addAction
+//			addAction: addAction
 		);
 		synthArray = synthArray add: synth;
 		NodeWatcher.register(synth);
@@ -163,6 +170,11 @@ SynthModel {
 			.enabled_(this.hasSynth)
 		)
 	}
+	font {
+		font ?? { font = Font.default.size_(10) };
+		^font;
+	}
+
 /*
 	makeOutputControls {
 		^HLayout(
@@ -173,10 +185,6 @@ SynthModel {
 		)
 	}
 */
-	font {
-		font ?? { font = Font.default.size_(10) };
-		^font;
-	}
 /*
 	makeOutputPane {
 		^ListView().fixedWidth_(150).minHeight_(50)

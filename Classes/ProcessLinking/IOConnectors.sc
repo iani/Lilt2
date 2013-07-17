@@ -22,12 +22,11 @@ ControlConnector {
 	}
 
 	makeGui {
-
-		patch.eventModel.numSlider(controlName.name, decoratorFunc: { | argKey, argView |
+		^patch.eventModel.numSlider(controlName.name, decoratorFunc: { | argKey, argView |
 			[   // TODO: must put a useful object here as drag source
-				DragBoth().object_(123).string_(argKey).font_(this.font),
+				DragBoth().object_(123).string_(argKey).font_(patch.font),
 				argView.orientation_(\horizontal).maxHeight_(20),
-				patch.eventModel.numberBox(controlName.name).fixedWidth_(50).font_(this.font)
+				patch.eventModel.numberBox(controlName.name).fixedWidth_(50).font_(patch.font)
 			];
 		})
 	}
