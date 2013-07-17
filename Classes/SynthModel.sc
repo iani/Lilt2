@@ -49,7 +49,7 @@ SynthModel {
 	}
 
 	makeControls {
-		var event, nameString, controls, inputs, outputs, nameSymbol, control, descriptor;
+		var event, controls, inputs, outputs, nameSymbol, control, descriptor;
 		event = eventModel.event;
 		controls = synthDesc.controls;
 		inputs = synthDesc.inputs;
@@ -59,9 +59,10 @@ SynthModel {
 				control = controls[i];
 				nameSymbol = control.name;
 				event[nameSymbol] = control.defaultValue;
-				this.addNotifier(event, nameSymbol, { | value | this.set(nameSymbol, value) });
 				case
-				{ nameString[..2] == "buf" } { connectors = connectors add: BufferConnector(this, control); }
+				{ nameString[..2] == "buf" } {
+					connectors = connectors add: BufferConnector(this, control);
+				}
 				{ (descriptor = inputs.detect({ | i | i.startingChannel === nameSymbol })).notNil } {
 					connectors = connectors add: InputConnector(this, control, descriptor)
 				}
@@ -70,7 +71,8 @@ SynthModel {
 				}
 				{ 	connectors = connectors add: ControlConnector(this, control) }
 			}
-		}
+		};
+		event keysDo: { | key | this.addNotifier(event, key, { | value | this.set(key, value) }); };
 	}
 
 	set { | key, value |
@@ -174,23 +176,6 @@ SynthModel {
 		font ?? { font = Font.default.size_(10) };
 		^font;
 	}
-
-/*
-	makeOutputControls {
-		^HLayout(
-			StaticText().string_("outputs").font_(this.font),
-			StaticText().string_("group (0+-8)").font_(Font.default.size_(9)).maxWidth_(50),
-			NumberBox().action_({ | me | this.setGroup(me.value) })
-			.decimals_(0).step_(1).clipLo_(-8).clipHi_(8).fixedWidth_(25).font_(this.font),
-		)
-	}
-*/
-/*
-	makeOutputPane {
-		^ListView().fixedWidth_(150).minHeight_(50)
-	}
-*/
-//	setGroup { "not yet implemented".postln; }
 
 	addView { | viewClass ... messagesActions |
 		var view;
