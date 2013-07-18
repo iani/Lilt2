@@ -5,10 +5,6 @@ TODO:
 
 */
 
-BufferList {
-
-}
-
 
 NamedBuffer {
 	var <path, <name, <buffer;

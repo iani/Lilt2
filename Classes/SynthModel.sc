@@ -47,7 +47,7 @@ SynthModel {
 		if (eventModel.isKindOf(Event)) {
 			eventModel = EventModel(eventModel)
 		};
-		eventModel.addSpecs(specs);
+		specs !? { eventModel.addSpecs(specs); };
 		this.makeControls;
 		synthArray = [];
 	}
