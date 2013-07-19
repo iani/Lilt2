@@ -13,8 +13,8 @@ InputConnector and OutputConnector instances represent UGens which read from or 
 */
 
 ControlConnector {
-	var <patch;       // The patch containing this link.
-	var <controlName; // Instance of ControlName from the SynthDesc
+	var <patch;         // The patch containing this link.
+	var <controlName;   // Instance of ControlName from the SynthDesc
 	var <busConnector;  // BusConnector.
 
 	*new { | patch, controlName |
@@ -33,6 +33,20 @@ ControlConnector {
 }
 
 BufferConnector : ControlConnector {
+
+	makeGui {
+		var name, menu;
+		name = controlName.name;
+		menu = PopUpMenu().maxHeight_(20).items_(["-"]);
+//		menu.addNotifier(Buffer(patch.server), );
+		^patch.eventModel.numSlider(controlName.name, decoratorFunc: { | argKey, argView |
+			[   // TODO: must put a useful object here as drag source
+				DragBoth().object_(123).string_(argKey).font_(patch.font),
+				menu,
+//				patch.eventModel.numberBox(controlName.name).fixedWidth_(50).font_(patch.font)
+			];
+		})
+	}
 
 }
 

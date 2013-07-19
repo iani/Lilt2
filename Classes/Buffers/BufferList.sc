@@ -7,21 +7,39 @@ Zillionth attempt at a practical Buffer manager
 
 BufferList {
 
-	var <server;
-	var <buffers;
-	var <path;
+	var <server;  // The server to which these buffers belong
+	var <buffers; // Dictionary of buffers stored under names (symbols) for named access
+	var <path;    // Path where this list is saved (or loaded from).
+	var <loadingBuffers; // Set of buffers that are waiting to be loaded sequentially
+	var <nextBufSpecs;   // the specs for the next buffer to be loaded
+	var <bufferLoadedAction; // called by a new buffer's completionAction/Message
 
 	*new { | server |
 		var new;
 		server = server.asTarget.server;
 		new = Library.global.at('Buffers', server);
 		if (new.isNil) {
-			new = this.newCopyArgs(server, IdentityDictionary());
+			new = this.newCopyArgs(server, IdentityDictionary(), nil, Set()).init;
 			ServerBoot.add({ new.loadAll }, server);
 			Library.global.put('Buffers', server, new);
 		};
 		^new;
 	}
+
+	init {
+		bufferLoadedAction = { | buffer | this.bufferLoaded(buffer) };
+	}
+
+	bufferLoaded { | buffer |
+		this.changed(\bufferLoaded, buffer);
+		if (this.buffersLoadingDone) {
+
+		}{
+
+		}
+	}
+
+	buffersLoadingDone { ^nextBufSpecs.size == 0 }
 
 	loadAll {
 		buffers keysValuesDo: { | name, buffer |
@@ -36,16 +54,28 @@ BufferList {
 	alloc { | name, numFrames, numChannels |
 		var buffer;
 		buffer = Buffer.alloc(server, numFrames, numChannels, { | buf |
-			this.changed(name, buf);
+			this.makeNextBuffer;
 		});
 		buffers[name] = buffer;
 		^buffer;
 	}
 
+	loadNewBuffer { | name, allocOrRead, specs |
+
+	}
+
+	makeNextBuffer {
+		nextBufSpecs = loadingBuffers.pop;
+		nextBufSpecs !? {
+		//	this.
+		}
+
+	}
+
 	read { | name, path |
 		var buffer;
 		buffer = Buffer.read(server, path, action: { | buf |
-			this.changed(name, buf);
+			this.changed(\newbuf, name, buf);
 		});
 		buffers[name] = buffer;
 		^buffer;
@@ -58,7 +88,7 @@ BufferList {
 			buf.free;
 			buffers[name] = nil
 		};
-		this.changed(name);
+		this.changed(\freebuf, name);
 	}
 
 	save { | argPath |
