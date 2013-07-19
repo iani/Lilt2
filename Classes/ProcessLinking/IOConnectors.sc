@@ -43,7 +43,7 @@ BufferConnector : ControlConnector {
 			[   // TODO: must put a useful object here as drag source
 				DragBoth().object_(123).string_(argKey).font_(patch.font),
 				menu,
-//				patch.eventModel.numberBox(controlName.name).fixedWidth_(50).font_(patch.font)
+				patch.eventModel.numberBox(controlName.name).fixedWidth_(50).font_(patch.font)
 			];
 		})
 	}
