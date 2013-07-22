@@ -2,7 +2,7 @@
 
 Example of SynthModel gui generation with custom specs.
 
-Tgrain example adapted from Thanassis.
+Tgrain example adapted from Thanassis Ikonomidis.
 
 */
 

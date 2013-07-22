@@ -24,30 +24,51 @@ ControlConnector {
 	makeGui {
 		^patch.eventModel.numSlider(controlName.name, decoratorFunc: { | argKey, argView |
 			[   // TODO: must put a useful object here as drag source
-				DragBoth().object_(123).string_(argKey).font_(patch.font),
+				DragBoth().string_(argKey).font_(patch.font),
 				argView.orientation_(\horizontal).maxHeight_(20),
 				patch.eventModel.numberBox(controlName.name).fixedWidth_(50).font_(patch.font)
 			];
 		})
 	}
+
+	server { ^patch.server }
+
+	set { | value |
+		patch.set(this.name, value);
+	}
+
+	name { ^controlName.name }
 }
 
 BufferConnector : ControlConnector {
-
+	var <bufferName, <buffer;
 	makeGui {
 		var name, menu;
 		name = controlName.name;
-		menu = PopUpMenu().maxHeight_(20).items_(["-"]);
-//		menu.addNotifier(Buffer(patch.server), );
+		menu = PopUpMenu().maxHeight_(20).items_(["-"])
+		.action_({ | me | this.setBuffer(me.item.asSymbol) })
+		.addNotifier(BufferList(this.server), \bufferList, { | buflist | this.updateMenu(buflist) })
+		.releaseOnClose;
+
 		^patch.eventModel.numSlider(controlName.name, decoratorFunc: { | argKey, argView |
 			[   // TODO: must put a useful object here as drag source
-				DragBoth().object_(123).string_(argKey).font_(patch.font),
+				DragBoth().string_(argKey).font_(patch.font),
 				menu,
-				patch.eventModel.numberBox(controlName.name).fixedWidth_(50).font_(patch.font)
+				patch.eventModel.numberBox(controlName.name)
+				.fixedWidth_(50).font_(patch.font).decimals_(0)
+				.clipLo_(0).clipHi_(patch.server.options.numBuffers)
 			];
 		})
 	}
 
+	updateMenu { | buflist |
+	}
+
+	setBuffer { | bufName |
+		var buffer;
+		buffer = BufferList(this.server).buffers[bufName];
+		if (buffer.isNil) { this.set(0); }{ this.set(buffer.bufnum) }
+	}
 }
 
 InputConnector : ControlConnector {

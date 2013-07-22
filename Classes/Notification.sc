@@ -105,22 +105,26 @@ Notification {
 + Object {
 
 	addNotifier { | notifier, message, action |
-		^Notification(notifier, message, this, action);
+//		^Notification(notifier, message, this, action);
+		Notification(notifier, message, this, action);
 	}
 
 	removeNotifier { | notifier, message |
-		^Notification.remove(notifier, message, this);
+//		^Notification.remove(notifier, message, this);
+		Notification.remove(notifier, message, this);
 	}
 
 	// First remove any previous notifier that sends me this message, then add notifier, message
 	replaceNotifier { | notifier, message, action |
 		this removeMessage: message;
-		^this.addNotifier(notifier, message, action);
+//		^this.addNotifier(notifier, message, action);
+		this.addNotifier(notifier, message, action);
 	}
 
 	// remove any notifiers that send me message
 	removeMessage { | message |
-		^Notification.removeMessage(message, this);
+//		^Notification.removeMessage(message, this);
+		Notification.removeMessage(message, this);
 	}
 
 	objectClosed {
@@ -131,7 +135,11 @@ Notification {
 	}
 
 	addNotifierOneShot { | notifier, message, action |
-		^Notification(notifier, message, this, { | ... args |
+//		^Notification(notifier, message, this, { | ... args |
+//			action.(*args); //action.(args);
+//			args.last.remove;
+//		});
+		Notification(notifier, message, this, { | ... args |
 			action.(*args); //action.(args);
 			args.last.remove;
 		});
@@ -145,6 +153,9 @@ Notification {
 		}{
 			notification.action = notification.action addFunc: action;
 		}
-		^notification;
 	}
+}
+
++ View {
+	releaseOnClose { this.onClose = { this.objectClosed } }
 }

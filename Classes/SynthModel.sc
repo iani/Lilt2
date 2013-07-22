@@ -198,4 +198,5 @@ SynthModel {
 		^AudioPatch(name ?? { defName.asSymbol }, this);
 	}
 
+	server { ^target.asTarget.server }
 }
