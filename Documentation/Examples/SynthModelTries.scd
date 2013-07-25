@@ -13,14 +13,19 @@ a = SynthModel({ WhiteNoise.ar(0.1) });
 a.gui;
 )
 
+a.synthArray.first.isPlaying
 
 (
 a = SynthModel('default');
 a.gui;
 )
 
+a.isRunning
+a.isPlaying
+
 a.synthArray.first.inspect;
 
+a.stop;
 
 a.start(true);
 

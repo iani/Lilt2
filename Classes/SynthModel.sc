@@ -106,7 +106,10 @@ SynthModel {
 		if (this.hasSynth) { this.release } { this.start }
 	}
 
+	isPlaying { ^this.hasSynth }
 	hasSynth { ^synthArray.size > 0 }
+
+	isRunning { ^this.isPlaying and: { synthArray.first.isRunning } }
 
 	start { | allowManySynths = false |
 		if (allowManySynths.not and: { this.hasSynth }) {
@@ -152,8 +155,12 @@ SynthModel {
 		this.changed(\release);
 	}
 
+	resume { this.run(1) }
+	pause { this.run(0) }
 	run { | flag = 0 |
-		synthArray do: _.run(flag);
+		var isRunning;
+		isRunning = [false, true][flag];
+		synthArray do: { | s | s.run(flag); s.isRunning = isRunning };
 		this.changed(\run, flag);
 	}
 
@@ -180,7 +187,8 @@ SynthModel {
 				}
 			)
 			.states_([["start"], ["fade out"]]).action_({ | me |
-				[{ this.release(eventModel.event[\releaseTime]) }, { this.start(true) }][me.value].value
+				[{ this.release(eventModel.event[\releaseTime]) }, { this.start(true) }]
+				[me.value].value
 			}).font_(this.font).value_(this.hasSynth.binaryValue),
 			this.addView(Button,
 				\synthEnded, { | n | n.listener.enabled = 0 },
