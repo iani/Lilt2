@@ -72,14 +72,7 @@ SynthListGui {
 
 		listView.items_(list.getItemNames)
 		.font_(Font.default.size_(10))
-		.releaseOnClose
 		.action_({ | me | this.selectSynth(me.value) })
-		.addNotifier(this, \list, { listView.items = list.getItemNames });
-
-		nameField.releaseOnClose
-		.addNotifier(this, \selectedSynth, { | model, notification |
-			model !? { notification.listener.string_(model.name) }
-		});
 
 		guiButton.action = { selected !? { selected.gui } };
 		this.selectSynth(listView.value);
