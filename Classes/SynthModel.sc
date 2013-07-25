@@ -14,7 +14,7 @@ SynthModel {
 	alive for all synths created by me, until they are freed. */
 	var completionMsg;   /* Synth creation message, if starting synth immediately upon
 	            SynthDef creation */
-	var >name;
+	var name;
 
 	classvar >font; // font for gui elements
 
@@ -139,6 +139,7 @@ SynthModel {
 			synthArray remove: theSynth;
 			if (this.hasSynth.not) { { this.changed(\synthEnded); }.defer(0) };
 		};
+		synth.isRunning = true;
 		this.changed(\synthStarted);
 	}
 
@@ -229,4 +230,6 @@ SynthModel {
 	server { ^target.asTarget.server }
 
 	name { ^name ? defName }
+
+	name_ { | argName | name = argName; this.changed(\name, argName); }
 }

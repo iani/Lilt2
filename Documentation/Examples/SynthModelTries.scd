@@ -1,7 +1,11 @@
 
 SynthList.gui;
 
-{ WhiteNoise.ar(0.1) }.l;
+a = { WhiteNoise.ar(0.1) }.l;
+
+a.addDependant({ | ... args | args.postln });
+
+a.gui;
 
 (
 a = SynthModel({ | test = 0, test2 = 10 | WhiteNoise.ar(0.1) });

@@ -7,11 +7,15 @@ See method Function:l
 
 SynthList {
 	classvar >default;
-	classvar <>font;
 
 	var <list;      // list of registered SynthModels
+	var controller; // relay update messages from synth models
 
-	*new { ^this.newCopyArgs(List()) }
+	*new { ^this.newCopyArgs(List()).init }
+
+	init {
+		controller = { | model | this.changed(\list, model); }
+	}
 
 	*add { | synthModel |
 		^this.default.add(synthModel);
@@ -24,9 +28,7 @@ SynthList {
 
 	add { | model |
 		list add: model;
-		this.addNotifier(model, \synthStarted, { this.changed(\list, model) });
-		this.addNotifier(model, \synthEnded, { this.changed(\list, model) });
-		this.addNotifier(model, \run, { this.changed(\list, model) });
+		model.addDependant(controller);
 		this.changed(\list, model);
 	}
 
@@ -34,9 +36,7 @@ SynthList {
 
 	remove { | model |
 		list remove: model;
-		this.removeNotifier(model, \synthStarted);
-		this.removeNotifier(model, \synthEnded);
-		this.removeNotifier(model, \run);
+		model.removeDependant(controller);
 	}
 
 	*gui { ^this.default.gui }
@@ -54,7 +54,6 @@ SynthListGui {
 	classvar <>runningColor, <>stoppedColor, <pausedColor;
 
 	var list; // SynthList holding registered SynthModels
-	var controller; // attached to selected SynthModel, translates notifications
 	var window, listView, nameField, guiButton, startButton, stopButton, pauseButton;
 	var <selected;
 
@@ -70,13 +69,6 @@ SynthListGui {
 	}
 
 	init {
-		// NOTE: The controller can be removed?
-//		controller = SimpleController();
-//		controller.put(\synthEnded, { this.synthEnded; this.updateListColors; });
-//		controller.put(\synthStarted, { this.synthStarted; this.updateListColors; });
-//		controller.put(\run, {
-//			this.updateRunState; this.updateListColors;
-//		});
 
 		this.addNotifier(list, \list, { | model |
 			listView.items = list.getItemNames;
@@ -85,10 +77,9 @@ SynthListGui {
 			}{
 				this.selectSynth(list.list indexOf: selected)
 			};
-			this.updateListColors;
 		});
 		window = Window("Synths", Rect(0, 0, 200, 300)).front;
-		window.onClose = { this.objectClosed; selected !? { selected.removeDependant(controller) } };
+		window.onClose = { this.objectClosed; };
 		window.layout = VLayout(
 			nameField = TextField(),
 			HLayout(
@@ -101,6 +92,8 @@ SynthListGui {
 				)
 			)
 		);
+
+		nameField.action = { | me | selected !? { selected.name = me.string } };
 
 		listView.items_(list.getItemNames)
 		.font_(Font.default.size_(10))
@@ -124,10 +117,9 @@ SynthListGui {
 
 	selectSynth { | index = 0 |
 		listView.value = index;
-//		selected !? { selected.removeDependant(controller); };
 		selected = list.list[index ? 0];
-//		selected !? { selected.addDependant(controller); };
 		this.updateButtonStates;
+		this.updateListColors;
 	}
 
 	updateButtonStates {
@@ -142,28 +134,12 @@ SynthListGui {
 			isPlaying = selected.hasSynth;
 			nameField.enabled_(true).string = selected.name;
 			guiButton.enabled = true;
+			startButton.enabled = true;
 			startButton.value = isPlaying.binaryValue;
 			stopButton.enabled = isPlaying;
-			this.updateRunState;
+			pauseButton.value = selected.isRunning.binaryValue;
 			pauseButton.enabled = isPlaying;
-			this.updateListColors;
 		};
-	}
-
-	synthStarted {
-		startButton.enabled_(true).value_(1);
-		stopButton.enabled = true;
-		pauseButton.enabled_(true).value_(0);
-	}
-
-	synthEnded {
-		startButton.enabled_(true).value_(0);
-		stopButton.enabled = false;
-		pauseButton.enabled_(false).value_(0);
-	}
-
-	updateRunState {
-		pauseButton.value = selected.isRunning.binaryValue;
 	}
 
 	updateListColors {
