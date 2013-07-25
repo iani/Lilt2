@@ -17,6 +17,8 @@ EventModel {
 		event.changed(key, value);
 	}
 
+	at { | key | ^event.at(key) }
+
 	updateAll {
 		event.keysValuesDo { | key, value | event.changed(key, value) };
 	}

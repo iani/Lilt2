@@ -12,6 +12,8 @@ SynthModel {
 	Several synths can be running, because one may start a new synth while
 	the previous has been released but not yet freed. Communication is kept
 	alive for all synths created by me, until they are freed. */
+	var completionMsg;   /* Synth creation message, if starting synth immediately upon
+	            SynthDef creation */
 
 	classvar >font; // font for gui elements
 
@@ -35,13 +37,19 @@ SynthModel {
 			defName = template.asSymbol;
 			synthDesc = SynthDescLib.global.at(defName);
 		}{
+			completionMsg = [];
 			if (template.isKindOf(Function)) {
 				synthDef = template.asFlexSynthDef;
 			}{
 				synthDef = template;
 			};
-			synthDef.add;
+			// If start is sent immediately, then it makes a new synth in completionMsg
+			{
+				synthDef.add(completionMsg: completionMsg);
+				completionMsg = nil;
+			}.defer(0.01);
 			defName = synthDef.name.asSymbol;
+			template = defName;
 			synthDesc = synthDef.asSynthDesc;
 		};
 		if (eventModel.isKindOf(Event)) {
@@ -85,13 +93,24 @@ SynthModel {
 		synthArray do: _.set(key, value);
 	}
 
+	put { | key, value |
+		eventModel.put(key, value);
+	}
+
+	at { | key | ^eventModel.at(key) }
+
+	event { ^eventModel.event }
+
 	toggle {
 		if (this.hasSynth) { this.release } { this.start }
 	}
 
 	hasSynth { ^synthArray.size > 0 }
 
-	start {
+	start { | allowManySynths = false |
+		if (allowManySynths.not and: { this.hasSynth }) {
+			^"SynthModel already running. To add more synths, use .start(true)".postln;
+		};
 		if (target.server.serverRunning) {
 			this.startSynth;
 		}{
@@ -101,18 +120,21 @@ SynthModel {
 
 	startSynth {
 		var synth;
-		synth = Synth(defName,
-			args: this.getArgs,
-			target: target,
-//			addAction: addAction
-		);
+		if (completionMsg.notNil) {
+			synth = Synth.basicNew(defName, this.server);
+			completionMsg = synth.newMsg(target, this.getArgs, addAction)
+		}{
+			synth = Synth(defName,
+				args: this.getArgs,
+				target: target,
+				addAction: addAction
+			);
+		};
 		synthArray = synthArray add: synth;
-		NodeWatcher.register(synth);
-		this.addNotifier(synth, \n_end, { | notification |
-			notification.notifier.objectClosed;
-			synthArray remove: notification.notifier;
+		synth onEnd: { | theSynth |
+			synthArray remove: theSynth;
 			if (this.hasSynth.not) { { this.changed(\synthEnded); }.defer(0) };
-		});
+		};
 		this.changed(\synthStarted);
 	}
 
@@ -135,15 +157,12 @@ SynthModel {
 	}
 
 	gui { | argKeys |
-		// basic gui - under development
 		var rows, layout;
 		rows = this.makeControlsGui(argKeys);
-		// rows[0] = rows[0] add: [ListView().minWidth_(120), rows: rows.size];
 		layout = GridLayout.rows(
 			[],
 			*rows
 		).addSpanning(this.makeStateControls, 0, 0, 1, 3)
-		// .addSpanning(this.makeOutputControls, 0, 3, 1, 1);
 		^Window(defName, Rect(400, 400, 400, rows.size + 1 * 20 + 10)).front.view.layout = layout;
 	}
 
@@ -160,8 +179,8 @@ SynthModel {
 				}
 			)
 			.states_([["start"], ["fade out"]]).action_({ | me |
-				[{ this.release(eventModel.event[\releaseTime]) }, { this.start }][me.value].value
-			}).font_(this.font), // .fixedWidth_(100)
+				[{ this.release(eventModel.event[\releaseTime]) }, { this.start(true) }][me.value].value
+			}).font_(this.font).value_(this.hasSynth.binaryValue),
 			this.addView(Button,
 				\synthEnded, { | n | n.listener.enabled = 0 },
 				\synthStarted, { | n | n.listener.enabled = 1 }

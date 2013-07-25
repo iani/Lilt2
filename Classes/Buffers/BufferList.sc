@@ -13,6 +13,8 @@ BufferList {
 	var <loadingBuffers; // Set of buffer specs that are waiting to be loaded sequentially
 	var <nextBufSpecs;   // the specs for the next buffer to be loaded
 	var <bufferLoadedAction; // called by a new buffer's completionAction/Message
+	var <bufferNames, <bufferNameIndexByBufnum;
+	var <spec;
 
 	*new { | server |
 		var new;
@@ -28,16 +30,14 @@ BufferList {
 
 	init {
 		bufferLoadedAction = { | buffer | this.bufferLoaded(buffer) };
+		bufferNames = [];
+		bufferNameIndexByBufnum = IdentityDictionary();
+		spec = ControlSpec(0, 1, \lin, 1);
 	}
 
 	bufferLoaded { | buffer |
-	//	[this, thisMethod.name, buffer].postln;
-		this.changed(\bufferLoaded, buffer); // remove this?
 		if (this.buffersLoadingDone) { // Note: This test here may be superfluous
-	//	[this, thisMethod.name, "DONNE ALL", buffer].postln;
-	//		this.changed(\bufferList, buffers.keys.asArray.sort);
 		}{
-	//		[this, thisMethod.name, "LOADING NEXT", buffer].postln;
 			this.makeNextBuffer;
 		}
 	}
@@ -49,13 +49,23 @@ BufferList {
 		nextBufSpecs = loadingBuffers.pop;
 		if (nextBufSpecs.notNil) {
 			#name ... specs = nextBufSpecs;
-			[this, thisMethod.name, name, specs].postln;
 			buffers[name.asSymbol] = Buffer.performList(*specs);
 		}{
-//		[this, thisMethod.name, "===================== DONE ALL ========================"].postln;
-			{ this.changed(\bufferList, buffers.keys.asArray.sort); }.defer(0);
+			this.updateBufferList;
 		}
 	}
+
+	updateBufferList {
+		bufferNames = buffers.keys.asArray.sort;
+		bufferNameIndexByBufnum = IdentityDictionary(buffers.size);
+		buffers keysValuesDo: { | name, buffer |
+			bufferNameIndexByBufnum[buffer.bufnum] = bufferNames indexOf: name;
+		};
+		spec = ControlSpec(0, buffers.size - 1, \lin, 1);
+		{ this.changed(\bufferList, bufferNames, spec) }.defer(0);
+	}
+
+	nameIndex { | bufnum = 0 | ^bufferNameIndexByBufnum[bufnum.asInteger] ? 0 }
 
 	loadAll {
 		buffers keysValuesDo: { | name, buffer |
@@ -86,6 +96,7 @@ BufferList {
 			buffers[name] = nil
 		};
 		this.changed(\freebuf, name);
+		this.updateBufferList;
 	}
 
 	save { | argPath |

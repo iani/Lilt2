@@ -156,6 +156,6 @@ Notification {
 	}
 }
 
-+ View {
++ QView {
 	releaseOnClose { this.onClose = { this.objectClosed } }
 }

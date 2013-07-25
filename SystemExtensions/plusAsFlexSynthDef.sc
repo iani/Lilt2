@@ -1,7 +1,7 @@
 
 + Function {
 	asFlexSynthDef { | rates, prependArgs, outClass=\Out, fadeTime = 0.1, name |
-		^GraphBuilder.wrapFlexOut(name ?? { this.identityHash.abs.asString },
+		^GraphBuilder.wrapFlexOut(name ?? { SystemSynthDefs.generateTempName },
 			this, rates, prependArgs, outClass, fadeTime
 		);
 	}

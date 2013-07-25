@@ -34,41 +34,64 @@ ControlConnector {
 	server { ^patch.server }
 
 	set { | value |
-		patch.set(this.name, value);
+		patch.put(this.name, value);
 	}
 
+	get { ^patch.at(this.name) }
+
 	name { ^controlName.name }
+
 }
 
 BufferConnector : ControlConnector {
-	var <bufferName, <buffer;
+	var <bufferName, <buffer, <bufferList;
+
+	*new { | patch, controlName |
+		^super.new(patch, controlName).getBufferList;
+	}
+
+	getBufferList { bufferList = BufferList(this.server) }
+
 	makeGui {
-		var name, menu;
+		var name, menu, numBox;
 		name = controlName.name;
 		menu = PopUpMenu().maxHeight_(20).items_(["-"])
 		.action_({ | me | this.setBuffer(me.item.asSymbol) })
-		.addNotifier(BufferList(this.server), \bufferList, { | buflist | this.updateMenu(buflist) })
-		.releaseOnClose;
+		.addNotifier(bufferList, \bufferList, { | buflist | this.updateMenu(menu, buflist) })
+		.addNotifier(patch.event, this.name, { | val |
+			menu.value = bufferList.nameIndex(val);
+		})
+		.releaseOnClose
+		.items_(bufferList.bufferNames)
+		.value_(bufferList.nameIndex(this.get));
+
+		numBox = patch.eventModel.numberBox(controlName.name)
+		.fixedWidth_(50).font_(patch.font).decimals_(0)
+		.clipLo_(0).clipHi_(patch.server.options.numBuffers);
 
 		^patch.eventModel.numSlider(controlName.name, decoratorFunc: { | argKey, argView |
 			[   // TODO: must put a useful object here as drag source
 				DragBoth().string_(argKey).font_(patch.font),
 				menu,
-				patch.eventModel.numberBox(controlName.name)
-				.fixedWidth_(50).font_(patch.font).decimals_(0)
-				.clipLo_(0).clipHi_(patch.server.options.numBuffers)
+				numBox
 			];
 		})
 	}
 
-	updateMenu { | buflist |
+	updateMenu { | menu, buflist |
+		var bufItemNum;
+		menu.items = buflist;
+		menu.value = buflist.indexOf(bufferName) ? 0;
 	}
 
 	setBuffer { | bufName |
 		var buffer;
+		bufferName = bufName;
 		buffer = BufferList(this.server).buffers[bufName];
-		if (buffer.isNil) { this.set(0); }{ this.set(buffer.bufnum) }
+		if (buffer.isNil) { this.set(0); }{ this.set(buffer.bufnum) };
 	}
+
+
 }
 
 InputConnector : ControlConnector {
