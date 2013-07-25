@@ -1,4 +1,8 @@
 
+SynthList.gui;
+
+{ WhiteNoise.ar(0.1) }.l;
+
 (
 a = SynthModel({ | test = 0, test2 = 10 | WhiteNoise.ar(0.1) });
 a.gui;
@@ -15,7 +19,10 @@ a = SynthModel('default');
 a.gui;
 )
 
-a.start;
+a.synthArray.first.inspect;
+
+
+a.start(true);
 
 a.release(5);
 a.release;
@@ -39,7 +46,7 @@ a.makeEvent;
 a.release;
 a.release(9.1);
 
-objectClo
+
 
 
 nil.asTarget.server.serverRunning;

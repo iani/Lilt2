@@ -14,6 +14,7 @@ SynthModel {
 	alive for all synths created by me, until they are freed. */
 	var completionMsg;   /* Synth creation message, if starting synth immediately upon
 	            SynthDef creation */
+	var >name;
 
 	classvar >font; // font for gui elements
 
@@ -218,4 +219,6 @@ SynthModel {
 	}
 
 	server { ^target.asTarget.server }
+
+	name { ^name ? defName }
 }

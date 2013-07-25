@@ -14,16 +14,8 @@ see also Synth:onEnd
 		synthModel = SynthModel(this, (out: outbus, fadeTime: fadeTime), target, addAction);
 		args pairsDo: { | key, value | synthModel.put(key, value) };
 		synthModel.start;
+		SynthList add: synthModel;
 		^synthModel;
-/*		synth = this.play(target, outbus, fadeTime, addAction, args);
-		NodeWatcher.register(synth);
-		NodeWatcherGui.addNotifier(synth, \n_end, { | notification |
-			notification.notifier.objectClosed;
-			synthArray remove: notification.notifier;
-			if (this.hasSynth.not) { { this.changed(\synthEnded); }.defer(0) };
-		});
-		this.changed(\synthStarted)
-*/
 	}
 }
 
