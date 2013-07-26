@@ -9,16 +9,16 @@ see also Synth:onEnd
 
 + Function {
 
+	// add a SynthModel from self to SynthList and play
 	l { | target, outbus = 0, fadeTime = 0.02, addAction = 'addToHead', args |
-		// add a SynthModel from self to SynthList and play
 		var synthModel;
 		synthModel = this.addSynthModel(target, outbus, fadeTime, addAction, args);
 		synthModel.start;
 		^synthModel;
 	}
 
+	// add a SynthModel from self to SynthList
 	addSynthModel { | target, outbus = 0, fadeTime = 0.02, addAction = 'addToHead', args |
-		// add a SynthModel from self to SynthList
 		var synthModel;
 		synthModel = SynthModel(this, (out: outbus, fadeTime: fadeTime), target, addAction);
 		args pairsDo: { | key, value | synthModel.put(key, value) };

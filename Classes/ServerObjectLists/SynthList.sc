@@ -37,6 +37,7 @@ SynthList {
 	remove { | model |
 		list remove: model;
 		model.removeDependant(controller);
+		this.changed(\list, model);
 	}
 
 	*gui { ^this.default.gui }
@@ -59,9 +60,9 @@ SynthListGui {
 
 	*initClass {
 		Class.initClassTree(Color);
-		runningColor = Color.red;
+		runningColor = Color(1, 0.5, 0.5);
 		stoppedColor = Color.white;
-		pausedColor = Color.gray;
+		pausedColor = Color.gray(0.7);
 
 	}
 	*new { | list |

@@ -1,6 +1,11 @@
+/* IZ Jul 26, 2013 (6:12 PM)
+
+Create gui for playing synths, by extracting controls from their synthdefs.
+
+*/
 
 SynthModel {
-	var <template; // a SynthDef name, SynthDef, or Function from which the synths are created
+	var <template;   // a SynthDef name, SynthDef, or Function from which the synths are created
 	var <eventModel; // an EventModel containing keys and parameter values for synth controls
 	var <target;     // Target to which synths are added
 	var <addAction = \addToHead; // Where to add the synths relative to the target
