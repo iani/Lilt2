@@ -28,7 +28,7 @@ SynthModel {
 		Spec.specs.addAll([
 			\fadeTime -> ControlSpec(0.01, 30),
 			\out -> ControlSpec(0, 127, \lin, step: 1, default: 0),
-		])
+		]);
 	}
 
 	*new { | template, eventModel, target, addAction = \addToHead, specs |
@@ -227,14 +227,26 @@ SynthModel {
 		^view;
 	}
 
-	// ========== Patching
-	audioPatch { | name |
-		^AudioPatch(name ?? { defName.asSymbol }, this);
-	}
-
+	// Display im lists and other GUIs
 	server { ^target.asTarget.server }
 
 	name { ^name ? defName }
 
 	name_ { | argName | name = argName; this.changed(\name, argName); }
+
+	// Linking to other SynthModels
+
+	controlOutputs {
+		^connectors select: { | c | c.isKindOf(OutputConnector) and: { c.rate === \control } }
+	}
+
+	controlInputs { ^connectors; }
+
+	audioOutputs {
+		^connectors select: { | c | c.isKindOf(OutputConnector) and: { c.rate === \audio } }
+	}
+
+	audioInputs {
+		^connectors select: { | c | c.isKindOf(InputConnector) and: { c.rate === \audio } }
+	}
 }

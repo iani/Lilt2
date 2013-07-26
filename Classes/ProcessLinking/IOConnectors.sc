@@ -15,7 +15,7 @@ InputConnector and OutputConnector instances represent UGens which read from or 
 ControlConnector {
 	var <patch;         // The patch containing this link.
 	var <controlName;   // Instance of ControlName from the SynthDesc
-	var <busConnector;  // BusConnector.
+	var <mapBusConnector;  // BusConnector: A bus to which this control may be mapped
 
 	*new { | patch, controlName |
 		^this.newCopyArgs(patch, controlName);
@@ -23,8 +23,8 @@ ControlConnector {
 
 	makeGui {
 		^patch.eventModel.numSlider(controlName.name, decoratorFunc: { | argKey, argView |
-			[   // TODO: must put a useful object here as drag source
-				DragBoth().string_(argKey).font_(patch.font),
+			[
+				StaticText().string_(argKey).font_(patch.font),
 				argView.orientation_(\horizontal).maxHeight_(20),
 				patch.eventModel.numberBox(controlName.name).fixedWidth_(50).font_(patch.font)
 			];
@@ -70,8 +70,8 @@ BufferConnector : ControlConnector {
 		.clipLo_(0).clipHi_(patch.server.options.numBuffers);
 
 		^patch.eventModel.numSlider(controlName.name, decoratorFunc: { | argKey, argView |
-			[   // TODO: must put a useful object here as drag source
-				DragBoth().string_(argKey).font_(patch.font),
+			[
+				StaticText().string_(argKey).font_(patch.font),
 				menu,
 				numBox
 			];
@@ -94,10 +94,12 @@ BufferConnector : ControlConnector {
 
 }
 
+// NB: Control-rate InputConnectors are not supported
 InputConnector : ControlConnector {
 	var <descriptor; /* IODesc from SynthDesc.
 	Holds rate, numberOfChannels, startingChannel, type.
 	The name of the control is stored in startingChannel. */
+	var <ioBusConnector; // BusConnector from/to which is read/written via In/Out etc.
 
 	*new { | patch, controlName, descriptor |
 		^this.newCopyArgs(patch, controlName, nil, descriptor);
