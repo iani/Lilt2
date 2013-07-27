@@ -1,3 +1,4 @@
+
 SynthDef("4ever", { |
 	out = 0, buf = 0, rate = 1, startPos = 0, loop = 1,
 	attack = 0.01, release = 1,
@@ -42,19 +43,11 @@ SynthDef("4ever", { |
 }).add;
 
 SynthDef("vibsin", { | freq = 400, vfreq = 5, vwidth = 1.066, amp = 0.1, gate = 1,
-	fadeTime = 0.2 |
+	fadeTime = 0.2, out = 0 |
 	var vs, env;
 	env = Env([0, 1, 0], [0.1, 1], releaseNode: 1);
 	vs = SinOsc.ar(SinOsc.kr(vfreq, 0, freq * vwidth - freq, freq), 0, amp);
-	Out.ar(0, Pan2.ar(vs, LFNoise1.kr(0.1).range(-1, 1))
+	Out.ar(out, Pan2.ar(vs, LFNoise1.kr(0.1).range(-1, 1))
 		* EnvGen.kr(env, gate, 1, 0, fadeTime, 2))
 }).add;
 
-SynthDef("vibsin2", { | freq = 400, vfreq = 5, vwidth = 1.066, amp = 0.1, gate = 1,
-	fadeTime = 0.2 |
-	var vs, env;
-	env = Env([0, 1, 0], [0.1, 1], releaseNode: 1);
-	vs = SinOsc.ar(SinOsc.kr(vfreq, 0, freq * vwidth - freq, freq), 0, amp);
-	Out.ar(0, Pan2.ar(vs, LFNoise1.kr(0.1).range(-1, 1))
-		* EnvGen.kr(env, gate, 1, 0, fadeTime, 2))
-}).add;

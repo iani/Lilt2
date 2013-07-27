@@ -14,27 +14,43 @@ SynthDefList {
 /*
 SynthDefList.gui;
 */
+	classvar default;
+
+	var window, list;
 	*initClass {
 			StartUp add: {
 			(PathName(PathName(PathName(this.filenameSymbol.asString).parentPath).parentPath
 			).parentPath +/+ "SynthDefs/*.scd").pathMatch do: _.load;
 			(Platform.userAppSupportDir +/+ "SynthDefs/*.scd").pathMatch do: _.load;
+			this.changed(\list);
 		}
 	}
 
-	*gui {
-		var window, list;
-		window = Window("SynthDefs", Rect(0, 300, 200, 450)).front;
+	*gui { this.default.gui; }
+
+	*default {
+		default ?? { default = this.new };
+		^default;
+	}
+
+	gui {
+		window = Window("SynthDefs", Rect(230, 0, 200, 300)).front;
 		window.view.layout = VLayout(
 			list = ListView().font_(Font.default.size_(10))
-			.items_(
+		);
+		this.updateList;
+		list.addNotifier(this.class, \list, { this.updateList });
+	}
+
+	updateList {
+		list.items_(
 				SynthDescLib.global.synthDescs.keys.asArray.collect(_.asString).reject({ | n |
 					"freqScope*".matchRegexp(n) or: {
 						"system_*".matchRegexp(n)
 					}
 				}).sort
-			);
-		)
+			).enterKeyAction = { | view |
+				view.item !? { SynthModel(view.item).add };
+		}
 	}
-
 }

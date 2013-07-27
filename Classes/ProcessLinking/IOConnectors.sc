@@ -41,6 +41,10 @@ ControlConnector {
 
 	name { ^controlName.name }
 
+	rate { ^\control }
+
+	asString { ^format("%:%", patch.name, this.name) }
+
 }
 
 BufferConnector : ControlConnector {
@@ -104,6 +108,8 @@ InputConnector : ControlConnector {
 	*new { | patch, controlName, descriptor |
 		^this.newCopyArgs(patch, controlName, nil, descriptor);
 	}
+
+	rate { ^descriptor.rate }
 }
 
 OutputConnector : InputConnector {

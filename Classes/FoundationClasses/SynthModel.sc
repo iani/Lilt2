@@ -19,7 +19,7 @@ SynthModel {
 	alive for all synths created by me, until they are freed. */
 	var completionMsg;   /* Synth creation message, if starting synth immediately upon
 	            SynthDef creation */
-	var name;
+	var <name;
 
 	classvar >font; // font for gui elements
 
@@ -64,6 +64,7 @@ SynthModel {
 		specs !? { eventModel.addSpecs(specs); };
 		this.makeControls;
 		synthArray = [];
+		name = format("%-%", defName, UniqueID.next - 1000);
 	}
 
 	makeControls {
@@ -230,9 +231,9 @@ SynthModel {
 	// Display im lists and other GUIs
 	server { ^target.asTarget.server }
 
-	name { ^name ? defName }
-
 	name_ { | argName | name = argName; this.changed(\name, argName); }
+
+	add { SynthList.default add: this }
 
 	// Linking to other SynthModels
 
@@ -243,10 +244,10 @@ SynthModel {
 	controlInputs { ^connectors; }
 
 	audioOutputs {
-		^connectors select: { | c | c.isKindOf(OutputConnector) and: { c.rate === \audio } }
+		^connectors select: { | c | (c.class === OutputConnector) and: { c.rate === \audio } }
 	}
 
 	audioInputs {
-		^connectors select: { | c | c.isKindOf(InputConnector) and: { c.rate === \audio } }
+		^connectors select: { | c | (c.class === InputConnector) and: { c.rate === \audio } }
 	}
 }

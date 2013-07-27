@@ -158,4 +158,10 @@ Notification {
 
 + QView {
 	releaseOnClose { this.onClose = { this.objectClosed } }
+
+	addNotifier { | notifier, message, action |
+		super.addNotifier(notifier, message, action);
+		this.releaseOnClose;
+	}
+
 }

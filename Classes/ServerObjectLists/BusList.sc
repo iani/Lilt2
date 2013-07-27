@@ -10,7 +10,7 @@ BusListGui();
 BusList {
 	classvar default;
 
-	var synthList; // list of SynthModels for interconnecting
+	var <synthList; // list of SynthModels for interconnecting
 	/* Note: Control-rate InputConnectors are not supported in the present implementation.
 	controlInputs get their input only by mapping: aSynth.map(parameter, busNumber)
 	*/
@@ -28,6 +28,12 @@ BusList {
 
 	init {
 		this.addNotifier(synthList, \list, { this.updateLists });
+		controlOutputs = [];
+		controlBusses = [];
+		controlInputs = [];
+		audioOutputs = [];
+		audioBusses = [];
+		audioInputs = [];
 	}
 
 	updateLists {
@@ -45,6 +51,8 @@ BusList {
 			audioInputs collect: _.asString
 		)
 	}
+
+	*gui { BusListGui(this.default) }
 }
 
 /*
@@ -58,82 +66,114 @@ BusListGui();
 
 
 BusListGui {
-	var <list;
+	classvar font;
+	var <list; // a BusList
 	var window;
+	var <controlOutputs, <controlBusses, <controlInputs;
+	var <audioOutputs, <audioBusses, <audioInputs;
+
+	var selCtlOut, selCtlBus, selCtlIn, selAudOut, selAudBus, selAudIn;
+	var ctlChansNumBox, audChansNumBox;
+	var ctlOutSetButton, ctlOutBranchButton, ctlLinkButton, ctlBusButton, ctlInSetButton, ctlinBranchButton;
+	var audOutSetButton, audOutBranchButton, audLinkButton, audBusButton, audInSetButton, audInBranchButton;
 
 	*new { | list |
+		font ?? { font = Font.default.size_(10) };
 		^this.newCopyArgs(list ?? { BusList.default }).init;
 	}
 
 	init {
-		window = Window("Bus Browser", Rect(0, 500, 900, 300)).front;
+		this.addNotifier(list, \lists, { | cOut, cBus, cIn, aOut, aBus, aIn |
+			this.updateLists(cOut, cBus, cIn, aOut, aBus, aIn);
+		});
+		window = Window("Bus Browser", Rect(0, 550, 900, 300)).front;
+		window.view.palette = QPalette.dark;
+		window.onClose = { this.objectClosed };
 		window.view.layout = HLayout(
 			[VLayout(
-				StaticText().string_("Control Outputs"),
+				StaticText().string_("Control Outputs").font_(font).align_(\center),
 				HLayout(
-					StaticText().string_("Links:"),
-//					Button().states_([["-"], ["=>", Color.black, Color.red], ["=>", Color.black, Color.blue]]),
-					Button().states_([["set"], ["remove"]]).maxWidth_(50),
-					Button().states_([["branch"]]).maxWidth_(50),
-//					Button().states_([["remove"]]).maxWidth_(50),
-				),
-				HLayout(
-					Button().states_([["show ctls"], ["show all"]]),
-					Button().states_([["auto link+", Color.black, Color.red]]),
-				),
-				ListView()
+					ctlOutSetButton = Button().states_([["set"], ["remove"]]).maxWidth_(50).font_(font),
+					ctlOutBranchButton = Button().states_([["branch"]]).maxWidth_(50).font_(font),
+				).spacing_(1),
+				controlOutputs = ListView()
 			), s: 2],
 			[VLayout(
-				StaticText().string_("Control Busses"),
+				StaticText().string_("Control Busses").font_(font).align_(\center),
 				VLayout(
-					Button().states_([["add bus"]]),
-					HLayout(StaticText().string_("chans:"), NumberBox().clipLo_(1).clipHi_(64).decimals_(0))
+					HLayout(
+						ctlLinkButton = Button().states_([["+auto link", Color.black, Color.red]]).maxWidth_(60).font_(font),
+						ctlBusButton = Button().states_([["+bus"]]).font_(font).maxWidth_(40),
+					).spacing_(1),
+					HLayout(
+						StaticText().string_("num chans:").font_(font),
+						ctlChansNumBox = NumberBox().clipLo_(1).clipHi_(64).decimals_(0)
+						.font_(font).maxWidth_(25).background_(Color.white)
+					)
 				),
-				ListView()
+				controlBusses = ListView()
 			), s: 1],
 			[VLayout(
-				StaticText().string_("Control Inputs"),
+				StaticText().string_("Control Inputs").font_(font).align_(\center),
 				HLayout(
-//					Button().states_([["-"], ["=>", Color.black, Color.red], ["=>", Color.black, Color.blue]]),
-//					StaticText().string_("(Link)"),
-					Button().states_([["set"], ["remove"]]).maxWidth_(50),
-					Button().states_([["branch"]]).maxWidth_(50),
-				),
-				ListView()
+					ctlInSetButton = Button().states_([["set"], ["remove"]]).maxWidth_(50).font_(font),
+					ctlinBranchButton = Button().states_([["branch"]]).maxWidth_(50).font_(font),
+				).spacing_(1),
+				controlInputs = ListView()
 			), s: 2],
 			[VLayout(
-				StaticText().string_("Audio Outputs"),
+				StaticText().string_("Audio Outputs").font_(font).align_(\center),
 				HLayout(
-//					StaticText().string_("Link:"),
-//					Button().states_([["-"], ["=>", Color.black, Color.red], ["=>", Color.black, Color.blue]]),
-					Button().states_([["set"], ["remove"]]).maxWidth_(50),
-					Button().states_([["branch"]]).maxWidth_(50),
-				),
-				HLayout(
-					Button().states_([["show ctls"], ["show all"]]),
-					Button().states_([["auto link+", Color.black, Color.red]]),
-				),
-				ListView()
+					Button().states_([["set"], ["remove"]]).maxWidth_(50).font_(font),
+					Button().states_([["branch"]]).maxWidth_(50).font_(font),
+				).spacing_(1),
+				audioOutputs = ListView()
+				.enterKeyAction_({ controlInputs.value = 0 })  // Test only - later select fist control input
+				.action_({ | me | this.selectAudioOutput(me.value) })
 			), s: 2],
 			[VLayout(
-				StaticText().string_("Audio Busses"),
+				StaticText().string_("Audio Busses").font_(font).align_(\center),
 				VLayout(
-					Button().states_([["add bus"]]),
-					HLayout(StaticText().string_("chans:"), NumberBox().clipLo_(1).clipHi_(64).decimals_(0))
+					HLayout(
+						Button().states_([["+auto link", Color.black, Color.red]]).maxWidth_(60).font_(font),
+						Button().states_([["+bus"]]).font_(font).maxWidth_(40),
+					).spacing_(1),
+					HLayout(
+						StaticText().string_("num chans:").font_(font),
+						audChansNumBox = NumberBox().clipLo_(1).clipHi_(64).decimals_(0)
+						.font_(font).maxWidth_(25).background_(Color.white)
+					)
 				),
-				ListView()
+				audioBusses = ListView()
 			), s: 1],
 			[VLayout(
-				StaticText().string_("Audio Inputs"),
+				StaticText().string_("Audio Inputs").font_(font).align_(\center),
 				HLayout(
-//					Button().states_([["-"], ["=>", Color.black, Color.red], ["=>", Color.black, Color.blue]]),
-//					StaticText().string_("(Link)"),
-					Button().states_([["set"], ["remove"]]).maxWidth_(50),
-					Button().states_([["branch"]]).maxWidth_(50),
-				),
-				ListView()
+					Button().states_([["set"], ["remove"]]).maxWidth_(50).font_(font),
+					Button().states_([["branch"]]).maxWidth_(50).font_(font),
+				).spacing_(1),
+				audioInputs = ListView()
 			), s: 2]
+		);
+		this.updateLists;
+	}
 
-		)
+	updateLists { | cOut, cBus, cIn, aOut, aBus, aIn |
+		controlOutputs.items = cOut;
+		controlInputs.items = cIn;
+		audioOutputs.items = aOut;
+		audioInputs.items = aIn;
+
+		// controlOutputs.postln;
+		// controlOutputs.value = 0;
+		// list.controlOutputs.indexOf(selCtlOut).postln;
+		controlOutputs.value = list.controlOutputs.indexOf(selCtlOut) ? 0;
+		controlInputs.value = list.controlInputs.indexOf(selCtlOut) ? 0;
+		audioOutputs.value = list.audioOutputs.indexOf(selCtlOut) ? 0;
+		audioInputs.value = list.audioInputs.indexOf(selCtlOut) ? 0;
+	}
+
+	selectAudioOutput { | index |
+		selAudOut = list.audioOutputs[index];
 	}
 }
