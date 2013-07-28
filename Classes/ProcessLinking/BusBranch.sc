@@ -5,7 +5,7 @@ Copy a signal from one BusConnector to another.
 
 BusBranch {
 
-	var inputBusConnector;
-	var outputBusConnector;
+	var <writerBusConnector;
+	var <readerBusConnector;
 	var linkSynth;
 }

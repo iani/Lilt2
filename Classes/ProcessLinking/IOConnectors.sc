@@ -45,6 +45,12 @@ ControlConnector {
 
 	asString { ^format("%:%", patch.name, this.name) }
 
+	audioBusses { ^[] }
+
+	controlBusses {
+		^[] // TODO
+	}
+
 }
 
 BufferConnector : ControlConnector {
@@ -103,16 +109,34 @@ InputConnector : ControlConnector {
 	var <descriptor; /* IODesc from SynthDesc.
 	Holds rate, numberOfChannels, startingChannel, type.
 	The name of the control is stored in startingChannel. */
-	var <ioBusConnector; // BusConnector from/to which is read/written via In/Out etc.
+	var <busConnector; // BusConnector from/to which is read/written via In/Out etc.
 
 	*new { | patch, controlName, descriptor |
 		^this.newCopyArgs(patch, controlName, nil, descriptor);
 	}
 
 	rate { ^descriptor.rate }
+
+	audioBusses {
+		if (this.rate === \audio) { ^this.writerBusses; }{ ^[] }
+	}
+
+	writerBusses {
+		if (busConnector.isNil) { ^[] }{ ^busConnector.writerBusses }
+	}
+
+	controlBusses { ^[] } // not supported. Use mapping on mapBusConnector
 }
 
 OutputConnector : InputConnector {
+
+	audioBusses {
+		if (this.rate === \audio) { ^this.readerBusses; }{ ^[] }
+	}
+
+	readerBusses {
+		if (busConnector.isNil) { ^[] }{ ^busConnector.readerBusses }
+	}
 
 
 }

@@ -178,7 +178,7 @@ SynthModel {
 			[],
 			*rows
 		).addSpanning(this.makeStateControls, 0, 0, 1, 3)
-		^Window(defName, Rect(400, 400, 400, rows.size + 1 * 20 + 10)).front.view.layout = layout;
+		^Window(name, Rect(400, 400, 400, rows.size + 1 * 20 + 10)).front.view.layout = layout;
 	}
 
 	makeControlsGui { ^connectors collect: _.makeGui; }
@@ -249,5 +249,12 @@ SynthModel {
 
 	audioInputs {
 		^connectors select: { | c | (c.class === InputConnector) and: { c.rate === \audio } }
+	}
+
+	audioBusses {
+		^connectors.collect(_.audioBusses).flat;
+	}
+	controlBusses {
+		^connectors.collect(_.controlBusses).flat;
 	}
 }

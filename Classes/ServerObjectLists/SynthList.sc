@@ -8,13 +8,15 @@ See method Function:l
 SynthList {
 	classvar >default;
 
+	var <server;
 	var <list;      // list of registered SynthModels
 	var controller; // relay update messages from synth models
 
-	*new { ^this.newCopyArgs(List()).init }
+	*new { | server |
+		^this.newCopyArgs(server.asTarget.server, List()).init }
 
 	init {
-		controller = { | model | this.changed(\list, model); }
+		controller = { | model | this.changed(\synthState, model); }
 	}
 
 	*add { | synthModel |
@@ -22,7 +24,7 @@ SynthList {
 	}
 
 	*default {
-		default ?? { default = this.new };
+		default ?? { default = this.new(Server.default) };
 		^default;
 	}
 
@@ -49,6 +51,21 @@ SynthList {
 	getItemNames {
 		^list collect: _.name
 	}
+
+	controlBusses {
+		var controlBusses;
+		controlBusses = Set();
+		list do: { | synthModel | controlBusses addAll: synthModel.controlBusses };
+		^controlBusses.asArray;
+	}
+
+	audioBusses {
+		var audioBusses;
+		audioBusses = Set();
+		list do: { | synthModel | audioBusses addAll: synthModel.audioBusses };
+		^audioBusses.asArray;
+	}
+
 }
 
 SynthListGui {
@@ -71,16 +88,7 @@ SynthListGui {
 
 	init {
 
-		this.addNotifier(list, \list, { | model |
-			listView.items = list.getItemNames;
-			if (selected.isNil) {
-				this.selectSynth(list.list indexOf: model)
-			}{
-				this.selectSynth(list.list indexOf: selected)
-			};
-		});
 		window = Window("Synths", Rect(0, 0, 200, 300)).front;
-		window.onClose = { this.objectClosed; };
 		window.layout = VLayout(
 			nameField = TextField(),
 			HLayout(
@@ -114,6 +122,21 @@ SynthListGui {
 		};
 
 		this.selectSynth(listView.value);
+
+		this.addNotifier(list, \list, { | model |
+			listView.items = list.getItemNames;
+			if (selected.isNil) {
+				this.selectSynth(list.list indexOf: model)
+			}{
+				this.selectSynth(list.list indexOf: selected)
+			};
+		});
+
+		this.addNotifier(list, \synthState, { | model |
+			this.updateListColors;
+			if (model === selected) { this.updateButtonStates; }
+		});
+		window.onClose = { this.objectClosed; };
 	}
 
 	selectSynth { | index = 0 |
