@@ -1,4 +1,9 @@
-#+TITLE: Lilt2
+                                Lilt2
+                                =====
+
+Author: I Z
+Date: 2013-07-28 09:40:07 EEST
+
 
 
 New take on some SuperCollider tools: Automatic GUI creation from SynthDefs, Synth patching (linking of i/o signals via Busses), Buffer list management and menus. 
