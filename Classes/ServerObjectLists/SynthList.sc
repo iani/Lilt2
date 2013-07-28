@@ -6,14 +6,27 @@ See method Function:l
 */
 
 SynthList {
+	classvar <all;
 	classvar >default;
 
 	var <server;
 	var <list;      // list of registered SynthModels
 	var controller; // relay update messages from synth models
 
+	*initClass {
+		all = IdentityDictionary();
+	}
+
 	*new { | server |
-		^this.newCopyArgs(server.asTarget.server, List()).init }
+		var synthList;
+		server = server.asTarget.server;
+		synthList = all[server];
+		synthList ?? {
+			synthList = this.newCopyArgs(server, List()).init;
+			all[server] = synthList;
+		};
+		^synthList;
+	}
 
 	init {
 		controller = { | model | this.changed(\synthState, model); }

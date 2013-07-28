@@ -8,6 +8,7 @@ BusListGui();
 
 
 BusList {
+	classvar <all;
 	classvar default;
 
 	var <synthList; // list of SynthModels for interconnecting
@@ -17,6 +18,10 @@ BusList {
 	var <controlOutputs, <controlBusses, <controlInputs;
 	var <audioOutputs, <audioBusses, <audioInputs;
 
+	*initClass {
+		all = IdentityDictionary();
+	}
+
 	*gui { BusListGui(this.default) }
 
 	*default {
@@ -24,13 +29,19 @@ BusList {
 		^default;
 	}
 
-	*new { | synthList |
-		^this.newCopyArgs(synthList ?? { SynthList.default }).init;
+	*new { | server |
+		var busList, synthList;
+		synthList = SynthList(server.asTarget.server);
+		busList = all[synthList];
+		busList ?? {
+			busList = this.newCopyArgs(synthList).init;
+			all[synthList] = busList;
+		};
+		^busList;
 	}
 
 	init {
 		this.addNotifier(synthList, \list, { this.updateSynthLists });
-		this.addNotifier(synthList.server, \bus, { this.updateBusLists });
 		controlOutputs = [];
 		controlBusses = [];
 		controlInputs = [];
@@ -55,6 +66,16 @@ BusList {
 //			audioBusses collect: _.asString,
 			audioInputs collect: _.asString
 		)
+	}
+
+	addAudio { | busConnector |
+		audioBusses = audioBusses add: busConnector;
+		this.changes(\audioBusses);
+	}
+
+	addControl { | busConnector |
+		controlBusses = controlBusses add: busConnector;
+		this.changed(\controlBusses);
 	}
 }
 

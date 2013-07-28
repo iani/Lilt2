@@ -5,15 +5,29 @@ BusConnector : Bus {
 	var <readers;  // List of (kinds of) ControlConnector or BusBranch instances
 
 	*control { arg server, numChannels = 1;
-		^super.control(server, numChannels).init;
+		^super.control(server, numChannels).initControl;
+	}
+
+	*audio { arg server, numChannels = 1;
+		^super.control(server, numChannels).initAudio;
+	}
+
+	initControl {
+		this.init;
+		BusList(server).addControl(this);
 	}
 
 	init {
 		writers = List();
 		readers = List();
-		server.changed(\bus, this);
 	}
 
+	initAudio {
+		this.init;
+		BusList(server).addAudio(this);
+	}
+
+	// Access to readers and writers, busses and connectors
 	writerBusses {
 		^[this] ++ writers.select({ | w | w.isKindOf(BusBranch) }).collect(_.writerBusConnector)
 	}
