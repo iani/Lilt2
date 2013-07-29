@@ -70,7 +70,7 @@ BusList {
 
 	addAudio { | busConnector |
 		audioBusses = audioBusses add: busConnector;
-		this.changes(\audioBusses);
+		this.changed(\audioBusses);
 	}
 
 	addControl { | busConnector |
@@ -107,9 +107,6 @@ BusListGui {
 	}
 
 	init {
-		this.addNotifier(list, \synthLists, { | cOut, cIn, aOut, aIn |
-			this.updateSynthLists(cOut, cIn, aOut, aIn);
-		});
 		window = Window("Bus Browser", Rect(0, 550, 900, 300)).front;
 		window.view.palette = QPalette.dark;
 		window.onClose = { this.objectClosed };
@@ -193,7 +190,15 @@ BusListGui {
 				.action_({ | me | this.selectAudioInput(me.value) })
 			), s: 2]
 		);
+		this.addNotifier(list, \synthLists, { | cOut, cIn, aOut, aIn |
+			this.updateSynthLists(cOut, cIn, aOut, aIn);
+		});
+		this.addNotifier(list, \audioBusses, { this.updateAudioBusses; });
+		this.addNotifier(list, \controlBusses, { this.updateControlBusses; });
+
 		this.updateSynthLists;
+		this.updateAudioBusses;
+		this.updateControlBusses;
 	}
 
 	updateSynthLists { | cOut, cIn, aOut, aIn |
@@ -253,8 +258,12 @@ BusListGui {
 		}
 	}
 
-	updateAudioBusList {
+	updateAudioBusses {
 		audioBusses.items = []; // TODO
 		audioBusses.value; // ...
+	}
+
+	updateControlBusses { // TODO
+
 	}
 }

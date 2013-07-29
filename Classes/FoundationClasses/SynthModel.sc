@@ -184,6 +184,8 @@ SynthModel {
 	makeControlsGui { ^connectors collect: _.makeGui; }
 
 	makeStateControls { | argKeys |
+		var hasFadeOut;
+		hasFadeOut = eventModel.keys includes: \fadeTime;
 		^HLayout(
 			this.addView(Button,
 				\synthEnded, { | n |
@@ -193,8 +195,9 @@ SynthModel {
 					n.listener.value = 1;
 				}
 			)
-			.states_([["start"], ["fade out"]]).action_({ | me |
-				[{ this.release(eventModel.event[\releaseTime]) }, { this.start(true) }]
+			// TODO: Do not include "fade out" state if synthdef has no gate
+			.states_(this.makeStartButtonStates(hasFadeOut)).action_({ | me |
+				[this.makeStopAction(hasFadeOut), { this.start(true) }]
 				[me.value].value
 			}).font_(this.font).value_(this.hasSynth.binaryValue),
 			this.addView(Button,
@@ -213,6 +216,23 @@ SynthModel {
 			.enabled_(this.hasSynth)
 		)
 	}
+
+	makeStartButtonStates { | hasFadeOut |
+		if (hasFadeOut) {
+			^[["start"], ["fade out"]]
+		}{
+			^[["start"], ["stop"]]
+		}
+	}
+
+	makeStopAction { | hasFadeOut |
+		if (hasFadeOut) {
+			^{ this.release(eventModel.event[\releaseTime]) }
+		}{
+			^{ this.free }
+		}
+	}
+
 	font {
 		font ?? { font = Font.default.size_(10) };
 		^font;

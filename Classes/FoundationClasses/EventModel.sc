@@ -12,6 +12,8 @@ EventModel {
 		argSpecs keysValuesDo: { | key, value | specs[key] = value.asSpec; };
 	}
 
+	keys { ^event.keys }
+
 	put { | key, value |
 		event.put(key, value);
 		event.changed(key, value);
