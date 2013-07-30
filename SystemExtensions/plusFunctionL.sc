@@ -20,9 +20,17 @@ see also Synth:onEnd
 	// add a SynthModel from self to SynthList
 	addSynthModel { | target, outbus = 0, fadeTime = 0.02, addAction = 'addToHead', args |
 		var synthModel;
+		synthModel = this.synthModel(
+			target, outbus = 0, fadeTime = 0.02, addAction = 'addToHead', args
+		);
+		SynthList add: synthModel;
+		^synthModel;
+	}
+
+	synthModel { | target, outbus = 0, fadeTime = 0.02, addAction = 'addToHead', args |
+		var synthModel;
 		synthModel = SynthModel(this, (out: outbus, fadeTime: fadeTime), target, addAction);
 		args pairsDo: { | key, value | synthModel.put(key, value) };
-		SynthList add: synthModel;
 		^synthModel;
 	}
 }

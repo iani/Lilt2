@@ -40,7 +40,7 @@ SynthDef("4ever", { |
 		+ (IFFT(shiftsrc) * shiftamp)
 		, pos, amp
 	));
-}).add;
+}).addWithSpecs((numteeth: [0, 32, \lin, 1]));
 
 SynthDef("vibsin", { | freq = 400, vfreq = 5, vwidth = 1.066, amp = 0.1, gate = 1,
 	fadeTime = 0.2, out = 0 |

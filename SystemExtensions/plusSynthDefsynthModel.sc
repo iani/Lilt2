@@ -12,5 +12,8 @@
 		^this.synthModel(eventModel, target, addAction, specs).gui;
 	}
 
+	addWithSpecs { | specs, libname, completionMsg, keepDef = true |
+		^this.metadata_((specs: specs)).add(libname, completionMsg, keepDef);
+	}
 }
 

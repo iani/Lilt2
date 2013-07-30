@@ -108,9 +108,10 @@ SynthListGui {
 				listView = ListView().minWidth_(120),
 				VLayout(
 					guiButton = Button().states_([["gui"]]),
+					// TODO: change button states according to whether synth has gate or not
 					startButton = Button().states_([["start"], ["fade out"]]),
 					stopButton = Button().states_([["stop"]]),
-					pauseButton = Button().states_([["resume"], ["pause"]])
+					pauseButton = Button().states_([["pause"], ["resume"]])
 				)
 			)
 		);
@@ -130,7 +131,7 @@ SynthListGui {
 		stopButton.action = { selected !? { selected.free } };
 		pauseButton.action = { | me |
 			selected !? {
-				[{ selected.pause }, { selected.resume }][me.value].value;
+				[{ selected.resume }, { selected.pause }][me.value].value;
 			}
 		};
 
@@ -174,7 +175,7 @@ SynthListGui {
 			startButton.enabled = true;
 			startButton.value = isPlaying.binaryValue;
 			stopButton.enabled = isPlaying;
-			pauseButton.value = selected.isRunning.binaryValue;
+			pauseButton.value = (isPlaying and: { selected.isRunning }.not).binaryValue;
 			pauseButton.enabled = isPlaying;
 		};
 	}

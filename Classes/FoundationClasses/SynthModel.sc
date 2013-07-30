@@ -61,6 +61,9 @@ SynthModel {
 		if (eventModel.isKindOf(Event)) {
 			eventModel = EventModel(eventModel)
 		};
+//		[this, thisMethod.name, synthDesc, synthDesc.specs].postln;
+//		synthDesc.specs !? { eventModel.specs putAll: synthDesc.specs; };
+		eventModel.specs.parent = synthDesc.specs;
 		specs !? { eventModel.addSpecs(specs); };
 		this.makeControls;
 		synthArray = [];
@@ -177,16 +180,16 @@ SynthModel {
 		layout = GridLayout.rows(
 			[],
 			*rows
-		).addSpanning(this.makeStateControls, 0, 0, 1, 3)
+		).addSpanning(HLayout(*this.makeStateControls), 0, 0, 1, 3)
 		^Window(name, Rect(400, 400, 400, rows.size + 1 * 20 + 10)).front.view.layout = layout;
 	}
 
 	makeControlsGui { ^connectors collect: _.makeGui; }
 
-	makeStateControls { | argKeys |
-		var hasFadeOut;
-		hasFadeOut = eventModel.keys includes: \fadeTime;
-		^HLayout(
+	makeStateControls {
+		var hasGate;
+		hasGate = synthDesc.hasGate;
+		^[
 			this.addView(Button,
 				\synthEnded, { | n |
 					n.listener.value = 0;
@@ -196,8 +199,8 @@ SynthModel {
 				}
 			)
 			// TODO: Do not include "fade out" state if synthdef has no gate
-			.states_(this.makeStartButtonStates(hasFadeOut)).action_({ | me |
-				[this.makeStopAction(hasFadeOut), { this.start(true) }]
+			.states_(this.makeStartButtonStates(hasGate)).action_({ | me |
+				[this.makeStopAction(hasGate), { this.start(true) }]
 				[me.value].value
 			}).font_(this.font).value_(this.hasSynth.binaryValue),
 			this.addView(Button,
@@ -214,19 +217,19 @@ SynthModel {
 			.states_([["pause"], ["resume"]]).action_({ | me | this.run(1 - me.value); })
 			.value_(this.hasSynth.and({ synthArray[0].isRunning.not }).binaryValue)
 			.enabled_(this.hasSynth)
-		)
+		]
 	}
 
-	makeStartButtonStates { | hasFadeOut |
-		if (hasFadeOut) {
+	makeStartButtonStates { | hasGate |
+		if (hasGate) {
 			^[["start"], ["fade out"]]
 		}{
 			^[["start"], ["stop"]]
 		}
 	}
 
-	makeStopAction { | hasFadeOut |
-		if (hasFadeOut) {
+	makeStopAction { | hasGate |
+		if (hasGate) {
 			^{ this.release(eventModel.event[\releaseTime]) }
 		}{
 			^{ this.free }
