@@ -103,6 +103,10 @@ Notification {
 }
 
 + Object {
+	/* Note: These messages return the receiver, for use in nested
+	statements, where the receiver is used for further messages or as
+	an argument. To obtain the notification instance, one may construct
+	it explicitly: Notification(notifier, message, this, action) */
 
 	addNotifier { | notifier, message, action |
 //		^Notification(notifier, message, this, action);
@@ -114,7 +118,8 @@ Notification {
 		Notification.remove(notifier, message, this);
 	}
 
-	// First remove any previous notifier that sends me this message, then add notifier, message
+	// First remove any previous notifier that sends me this message,
+	// then add notifier, message
 	replaceNotifier { | notifier, message, action |
 		this removeMessage: message;
 //		^this.addNotifier(notifier, message, action);
@@ -153,6 +158,10 @@ Notification {
 		}{
 			notification.action = notification.action addFunc: action;
 		}
+	}
+
+	addNotifierSwitch { | switch, message, action, setAction, unsetAction |
+		switch.addListener(this, message, action, setAction, unsetAction);
 	}
 }
 

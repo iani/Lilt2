@@ -89,6 +89,8 @@ SynthListGui {
 	var ampKnob, ampNumBox;
 	var <selected;
 
+	var <modelSwitcher; // for new version using NotifierSwitch
+
 	*initClass {
 		Class.initClassTree(Color);
 		runningColor = Color(1, 0.5, 0.5);
@@ -103,6 +105,10 @@ SynthListGui {
 	}
 
 	init {
+		modelSwitcher = NotifierSwitch(this, \synthModel, { | model |
+			[this, thisMethod.name, "experimental use of NotifierSwitch", model].postln;
+			if (model.isNil) { model } { model.eventModel.event };
+		});
 
 		window = Window("Synths", Rect(0, 0, 200, 300)).front;
 		window.layout = VLayout(
@@ -116,7 +122,15 @@ SynthListGui {
 					stopButton = Button().states_([["stop"]]),
 					pauseButton = Button().states_([["pause"], ["resume"]]),
 					ampKnob = Knob(),
-					ampNumBox = NumberBox()
+					ampNumBox = NumberBox(),
+					Slider().addNotifierSwitch(modelSwitcher, \amp, { | val, notification |
+						[this, thisMethod.name, "ampmessage", val].postln;
+						notification.listener.value = val;
+						}, { | event |
+							[this, thisMethod.name, "new notifier", event].postln;
+							event;
+						}
+					),
 				)
 			)
 		);
@@ -177,6 +191,7 @@ SynthListGui {
 		selected = list.list[index ? 0];
 		this.updateButtonStates;
 		this.updateListColors;
+		this.changed(\synthModel, selected);
 	}
 
 	updateButtonStates {
