@@ -130,11 +130,9 @@ SynthListGui {
 					.addNotifierSwitch(modelSwitcher, \amp, { | val, notification |
 						notification.listener.value = val;
 						}, { | synthModel |
-
 							if (synthModel.isNil) { nil } { synthModel.eventModel.event; };
 						}
 					).action_({ | me |
-						me.value.postln;
 						modelSwitcher.notifier !? {
 							modelSwitcher.notifier.eventModel.put(\amp, me.value)
 						}
@@ -144,11 +142,9 @@ SynthListGui {
 					.addNotifierSwitch(modelSwitcher, \amp, { | val, notification |
 						notification.listener.value = val;
 						}, { | synthModel |
-
 							if (synthModel.isNil) { nil } { synthModel.eventModel.event; };
 						}
 					).action_({ | me |
-						me.value.postln;
 						modelSwitcher.notifier !? {
 							modelSwitcher.notifier.eventModel.put(\amp, me.value)
 						}

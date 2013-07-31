@@ -9,10 +9,18 @@ NullObject.isRunning;
 NullObject {
 
 	*doesNotUnderstand {
-		^nil;   /* responding with nil is useful for messages that ask for a value.
-		the user of the message can then provide a default value by checking if the
-		response was nil */
+		// Return self. Enables chaining of messages:
+		// NullObject.aMessage.anotherMessage
 	}
+
+	// behave like nil in queries:
+
+	? { arg obj; ^obj }
+	?? { arg obj; ^obj.value(this) }
+	!? { arg obj; ^this }
+
+	*isNil { ^true }
+	*notNil { ^false }
 
 	// should not use notifiers or dependants etc.
 	*addNotifier { ^this }
