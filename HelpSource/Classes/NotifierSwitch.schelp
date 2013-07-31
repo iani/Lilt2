@@ -1,0 +1,145 @@
+TITLE:: NotifierSwitch
+summary:: Select the object from which another object receives notifications, by listening to changes from a third object
+categories:: Libraries>Lilt2
+related:: Classes/Notification
+
+DESCRIPTION::
+
+
+
+
+CLASSMETHODS::
+
+METHOD:: new
+Create a new instance of NotifierSwitch
+
+ARGUMENT:: switcher
+The object which notifiers the notifier switch to change the notifier of all its listeners. 
+
+ARGUMENT:: switchMessage
+A Symbol: The message which is sent by the switcher to effect a change of notifier. 
+
+ARGUMENT:: getNotifierAction
+A Function: Function evaluated to get the new notifier. The default gets the notifier from the first argument sent to the function:
+
+code:: 
+{ | notifier | notifier }
+::
+
+returns:: (describe returnvalue here)
+A new instance of NotifierSwitch.
+
+INSTANCEMETHODS::
+
+METHOD:: switchSetActions
+Method used internally to hold the actions performed when a new notifier is set. 
+
+returns:: the receiver
+
+METHOD:: addListener
+Add an object to listen to notifications from notifiers selected by the NotifierSwitch. 
+
+ARGUMENT:: listener
+The object which accepts the notifications. 
+
+ARGUMENT:: message
+The message to which the listener object responds.
+
+ARGUMENT:: action
+A Function: The action performed when the listener receives message from the notifier. 
+
+ARGUMENT:: setAction
+A Function: Action performed when a new notifier is set. 
+
+ARGUMENT:: unsetAction
+A Function: Action performed when nil is set as notifier (no notifier). 
+
+returns:: The receiver. 
+
+METHOD:: notifications
+Access the contents of instance variable 'notificaitons'.
+
+returns:: Array of Notification instances currently registered. 
+
+METHOD:: addNotification
+Private (internal) method used by setNotifier to and addListener to create and add new Notification instenaces. 
+
+ARGUMENT:: argNotifier
+The notifier to which the listener listens for notifications. 
+
+ARGUMENT:: message
+The message to which the listener responds. 
+
+ARGUMENT:: listener
+The listener that waits for notifications. 
+
+ARGUMENT:: action
+The action performed when listener receives message from notifier. 
+
+returns:: The receiver. 
+
+METHOD:: setNotifier
+Private (internal) method called whenever the NotifierSwitch instance receives the defined switchMessage from the switcher. This method sets the notifier to a new instance obtained by applying the getNotifierAction on the arguments sent 
+
+ARGUMENT:: argNotifier
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: switchUnsetActions
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: init
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: switchMessage
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: notifier
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: notificationTemplates
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: switcher
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: getNotifierAction
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+
+EXAMPLES::
+
+code::
+n = NotifierSwitch(\switcher, \switch, { | notifier ... args | notifier });
+
+
+n.notifier;
+
+
+n.addListener(\listener, \new, { | ... args | ["listener this:", args].postln });
+
+
+\switcher.changed(\switch, \notifier1, 2, 3);
+\switcher.changed(\switch, \notifier2, 2, 3);
+
+
+\notifier1.changed(\new, 1, 2, 3, 4, 5);
+
+\notifier2.changed(\new, 100, 1, 2, 3, 4, 5);
+
+::

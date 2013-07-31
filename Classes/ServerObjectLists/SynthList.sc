@@ -82,10 +82,11 @@ SynthList {
 }
 
 SynthListGui {
-	classvar <>runningColor, <>stoppedColor, <pausedColor;
+	classvar <>runningColor, <>stoppedColor, <pausedColor, ampSpec;
 
 	var list; // SynthList holding registered SynthModels
 	var window, listView, nameField, guiButton, startButton, stopButton, pauseButton;
+	var ampKnob, ampNumBox;
 	var <selected;
 
 	*initClass {
@@ -93,6 +94,8 @@ SynthListGui {
 		runningColor = Color(1, 0.5, 0.5);
 		stoppedColor = Color.white;
 		pausedColor = Color.gray(0.7);
+		Class.initClassTree(ControlSpec);
+		ampSpec = ControlSpec(0, 8, \lin, 0, 0);
 
 	}
 	*new { | list |
@@ -111,7 +114,9 @@ SynthListGui {
 					// TODO: change button states according to whether synth has gate or not
 					startButton = Button().states_([["start"], ["fade out"]]),
 					stopButton = Button().states_([["stop"]]),
-					pauseButton = Button().states_([["pause"], ["resume"]])
+					pauseButton = Button().states_([["pause"], ["resume"]]),
+					ampKnob = Knob(),
+					ampNumBox = NumberBox()
 				)
 			)
 		);
@@ -134,6 +139,20 @@ SynthListGui {
 				[{ selected.resume }, { selected.pause }][me.value].value;
 			}
 		};
+
+		ampKnob.action_({ | me |
+			var val;
+			val = ampSpec.map(me.value);
+			ampNumBox.value = val;
+			selected !? { selected.put(\amp, val); };
+		});
+
+		ampNumBox.action_({ | me |
+			var val;
+			val = me.value;
+			ampKnob.value = ampSpec.unmap(val);
+			selected !? { selected.put(\amp, me.val) };
+		});
 
 		this.selectSynth(listView.value);
 
@@ -161,13 +180,15 @@ SynthListGui {
 	}
 
 	updateButtonStates {
-		var isPlaying;
+		var isPlaying, amp;
 		if (selected.isNil) {
 			nameField.string_("").enabled = false;
 			guiButton.enabled = false;
 			startButton.enabled = false;
 			stopButton.enabled = false;
 			pauseButton.enabled = false;
+			ampKnob.value = 0;
+			ampNumBox.value = 0;
 		}{
 			isPlaying = selected.hasSynth;
 			nameField.enabled_(true).string = selected.name;
@@ -177,6 +198,13 @@ SynthListGui {
 			stopButton.enabled = isPlaying;
 			pauseButton.value = (isPlaying and: { selected.isRunning }.not).binaryValue;
 			pauseButton.enabled = isPlaying;
+			// todo: connect to eventModel of synth ...
+			amp = selected.at('amp');
+//			[this, thisMethod.name, selected, selected.at('amp')].postln;
+			amp !? {
+				ampKnob.value = ampSpec.map(amp);
+				ampNumBox.value = amp;
+			};
 		};
 	}
 

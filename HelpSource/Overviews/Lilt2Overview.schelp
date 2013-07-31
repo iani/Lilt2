@@ -13,3 +13,9 @@ list::
 ## Easy loading of sound files to Buffers, staving of Buffer lists, and assignment of buffers to parameters of Synths by selecting from a menu of named buffers. 
 ## (Under development!): Easy linking of audio or control outputs of synths to audio or control inputs. 
 ::
+
+section:: First steps
+
+To create a gui for a synthdef do: 
+
+
