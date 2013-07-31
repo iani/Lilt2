@@ -107,7 +107,8 @@ SynthListGui {
 	init {
 		modelSwitcher = NotifierSwitch(this, \synthModel, { | model |
 			[this, thisMethod.name, "experimental use of NotifierSwitch", model].postln;
-			if (model.isNil) { model } { model.eventModel.event };
+			// if (model.isNil) { model } { model.eventModel.event };
+			model
 		});
 
 		window = Window("Synths", Rect(0, 0, 200, 300)).front;
@@ -123,14 +124,35 @@ SynthListGui {
 					pauseButton = Button().states_([["pause"], ["resume"]]),
 					ampKnob = Knob(),
 					ampNumBox = NumberBox(),
-					Slider().addNotifierSwitch(modelSwitcher, \amp, { | val, notification |
-						[this, thisMethod.name, "ampmessage", val].postln;
+					Slider()
+					.orientation_(\horizontal)
+					.maxHeight_(20)
+					.addNotifierSwitch(modelSwitcher, \amp, { | val, notification |
 						notification.listener.value = val;
-						}, { | event |
-							[this, thisMethod.name, "new notifier", event].postln;
-							event;
+						}, { | synthModel |
+
+							if (synthModel.isNil) { nil } { synthModel.eventModel.event; };
 						}
-					),
+					).action_({ | me |
+						me.value.postln;
+						modelSwitcher.notifier !? {
+							modelSwitcher.notifier.eventModel.put(\amp, me.value)
+						}
+					}),
+					NumberBox()
+					.maxHeight_(20)
+					.addNotifierSwitch(modelSwitcher, \amp, { | val, notification |
+						notification.listener.value = val;
+						}, { | synthModel |
+
+							if (synthModel.isNil) { nil } { synthModel.eventModel.event; };
+						}
+					).action_({ | me |
+						me.value.postln;
+						modelSwitcher.notifier !? {
+							modelSwitcher.notifier.eventModel.put(\amp, me.value)
+						}
+					})
 				)
 			)
 		);

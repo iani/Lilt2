@@ -6,11 +6,7 @@ Using NotifierSwitch
 
 
 n = NotifierSwitch(\switcher, \switch, { | notifier ... args | notifier });
-
-
 n.notifier;
-
-
 n.addListener(\listener, \new, { | ... args | ["listener this:", args].postln });
 
 
