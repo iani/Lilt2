@@ -68,7 +68,7 @@ BufferConnector : ControlConnector {
 		menu = PopUpMenu().maxHeight_(20).items_(["-"])
 		.action_({ | me | this.setBuffer(me.item.asSymbol) })
 		.addNotifier(bufferList, \bufferList, { | buflist | this.updateMenu(menu, buflist) })
-		.addNotifier(patch.event, this.name, { | val |
+		.addNotifier(patch.eventModel, this.name, { | val |
 			menu.value = bufferList.nameIndex(val);
 		})
 		.releaseOnClose

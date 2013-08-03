@@ -16,7 +16,7 @@ EventModel {
 
 	put { | key, value |
 		event.put(key, value);
-		event.changed(key, value);
+		this.changed(key, value);
 	}
 
 	at { | key | ^event.at(key) }
@@ -26,7 +26,7 @@ EventModel {
 	}
 
 	addEventListener { | listener, key, action |
-		listener.addNotifier(event, key, { | value | action.(value) })
+		listener.addNotifier(this, key, { | value | action.(value) })
 	}
 
 	// Widgets : Different types of gui views
@@ -78,7 +78,7 @@ EventModel {
 		view = this.makeView(NumberBox).decimals_(4);
 		value = event[key];
 		value !? { view.value = value };
-		view.addNotifier(event, key, { | val | view.value = val });
+		view.addNotifier(this, key, { | val | view.value = val });
 		view.action = { | me | this.put(key, me.value) };
 		^switch ( decoratorFunc,
 			nil, { view },
@@ -174,7 +174,7 @@ EventModel {
 		spec = spec.asSpec;
 		value = event[key];
 		value !? { view.value = spec.unmap(value) };
-		view.addNotifier(event, key, { | val | view.value = spec.unmap(val) });
+		view.addNotifier(this, key, { | val | view.value = spec.unmap(val) });
 		view.action = { | me | this.put(key, spec.map(me.value)) };
 		decoratorFunc = decoratorFunc ?? {{ | argKey, argView |
 			HLayout(StaticText().string_(argKey), argView);

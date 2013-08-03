@@ -82,7 +82,7 @@ SynthModel {
 				control = controls[i];
 				nameSymbol = control.name;
 				event[nameSymbol] = control.defaultValue;
-				this.addNotifier(event, nameSymbol, { | value | this.set(nameSymbol, value) });
+				this.addNotifier(eventModel, nameSymbol, { | value | this.set(nameSymbol, value) });
 				case
 				{ nameString[..2] == "buf" } {
 					connectors = connectors add: BufferConnector(this, control);
@@ -96,7 +96,6 @@ SynthModel {
 				{ 	connectors = connectors add: ControlConnector(this, control) }
 			};
 		};
-//		event keysDo: { | key | this.addNotifier(event, key, { | value | this.set(key, value) }); };
 	}
 
 	set { | key, value |
