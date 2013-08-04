@@ -85,7 +85,7 @@ SynthListGui {
 	classvar <>runningColor, <>stoppedColor, <pausedColor, ampSpec;
 
 	var list; // SynthList holding registered SynthModels
-	var window, listView, nameField, guiButton, startButton, stopButton, pauseButton;
+	var window, listView, stopButton, pauseButton;
 	var ampKnob, ampNumBox;
 	var <selected;
 
@@ -111,22 +111,35 @@ SynthListGui {
 
 		window = Window("Synths", Rect(0, 0, 200, 300)).front;
 		window.layout = VLayout(
-			nameField = TextField(),
+			TextField()
+			.action_({ | me |
+				modelSwitcher.notifier !? {
+					modelSwitcher.notifier.name = me.string;
+					list.changed(\list);
+				}
+			})
+			.addNotifierSwitch(modelSwitcher, \name, { | me |
+				modelSwitcher.notifier !? { me.string = modelSwitcher.notifier.name }
+				}, { | model, me |
+					if (model.isNil) { me.string = "" } { me.string = model.name }
+			}),
 			HLayout(
-				listView = ListView().minWidth_(120),
 				VLayout(
-					guiButton = Button().states_([["gui"]]),
+					listView = ListView().minWidth_(120),
+					ListView().minWidth_(120).font_(Font.default.size_(10))
+					.items_(list.getItemNames)
+					.action_({ | me | this.selectSynth(me.value) })
+					.addNotifier(list, \list, { | model, notification |
+						notification.listener.items = list.getItemNames;
+						// TODO: Complete this!
+						this.selectSynth();
+					}),
+				),
+				VLayout(
 					Button().states_([["gui"]])
 					.action_({ modelSwitcher.notifier.gui })
 					.addNotifierSetActions(modelSwitcher, _.enabled_(true), _.enabled_(false)),
-					Button().states_([["start", Color.green], ["fade out", Color.red]])
-					.action_({ | v |
-						if (v.value > 0) {
-							modelSwitcher.notifier.start;
-						}{
-							modelSwitcher.notifier.release;
-						}
-					})
+					Button().states_([["start"], ["fade out"]])
 					.addNotifierSetActions(modelSwitcher, { | v |
 						v.states = modelSwitcher.notifier.makeStartButtonStates;
 						v.action = modelSwitcher.notifier.makeStartButtonAction;
@@ -134,7 +147,6 @@ SynthListGui {
 						v.value = modelSwitcher.notifier.isPlaying.binaryValue;
 					}, _.enabled_(false)),
 
-					startButton = Button().states_([["start"], ["fade out"]]),
 					stopButton = Button().states_([["stop"]]),
 					pauseButton = Button().states_([["pause"], ["resume"]]),
 					ampKnob = Knob(),
@@ -174,18 +186,10 @@ SynthListGui {
 			)
 		);
 
-		nameField.action = { | me | selected !? { selected.name = me.string } };
-
 		listView.items_(list.getItemNames)
 		.font_(Font.default.size_(10))
 		.action_({ | me | this.selectSynth(me.value) });
 
-		guiButton.action = { selected !? { selected.gui } };
-		startButton.action = { | me |
-			selected !? {
-				[{ selected.release }, { selected.start(true) }][me.value].value;
-			}
-		};
 		stopButton.action = { selected !? { selected.free } };
 		pauseButton.action = { | me |
 			selected !? {
@@ -236,19 +240,12 @@ SynthListGui {
 	updateButtonStates {
 		var isPlaying, amp;
 		if (selected.isNil) {
-			nameField.string_("").enabled = false;
-			guiButton.enabled = false;
-			startButton.enabled = false;
 			stopButton.enabled = false;
 			pauseButton.enabled = false;
 			ampKnob.value = 0;
 			ampNumBox.value = 0;
 		}{
 			isPlaying = selected.hasSynth;
-			nameField.enabled_(true).string = selected.name;
-			guiButton.enabled = true;
-			startButton.enabled = true;
-			startButton.value = isPlaying.binaryValue;
 			stopButton.enabled = isPlaying;
 			pauseButton.value = (isPlaying and: { selected.isRunning }.not).binaryValue;
 			pauseButton.enabled = isPlaying;
