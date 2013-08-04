@@ -41,6 +41,7 @@ NotifierSwitch {
 				action[1].value(notifier, path[0]), path[1], path[0], action[0]
 			);
 		};
+		this.changed(\notifier, notifier);
 	}
 
 	addNotification { | argNotifier, message, listener, action |

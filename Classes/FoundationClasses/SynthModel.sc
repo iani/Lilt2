@@ -76,6 +76,7 @@ SynthModel {
 		controls = synthDesc.controls;
 		inputs = synthDesc.inputs;
 		outputs = synthDesc.outputs;
+		connectors = [];
 		controls.collect({ | cn | cn.name.asString; }) do: { | nameString, i |
 			if (nameString[..1] != "i_" and: { nameString != "gate" }) {
 				var nameSymbol;
@@ -198,10 +199,9 @@ SynthModel {
 				}
 			)
 			// TODO: Do not include "fade out" state if synthdef has no gate
-			.states_(this.makeStartButtonStates(hasGate)).action_({ | me |
-				[this.makeStopAction(hasGate), { this.start(true) }]
-				[me.value].value
-			}).font_(this.font).value_(this.hasSynth.binaryValue),
+			.states_(this.makeStartButtonStates(hasGate))
+			.action_(this.makeStartButtonAction(hasGate))
+			.font_(this.font).value_(this.hasSynth.binaryValue),
 			this.addView(Button,
 				\synthEnded, { | n | n.listener.enabled = 0 },
 				\synthStarted, { | n | n.listener.enabled = 1 }
@@ -220,6 +220,7 @@ SynthModel {
 	}
 
 	makeStartButtonStates { | hasGate |
+		hasGate ?? { hasGate = synthDesc.hasGate };
 		if (hasGate) {
 			^[["start"], ["fade out"]]
 		}{
@@ -227,9 +228,17 @@ SynthModel {
 		}
 	}
 
+	makeStartButtonAction { | hasGate |
+		hasGate ?? { hasGate = synthDesc.hasGate };
+		^{ | me |
+			[this.makeStopAction(hasGate), { this.start(true) }]
+			[me.value].value
+		}
+	}
+
 	makeStopAction { | hasGate |
 		if (hasGate) {
-			^{ this.release(eventModel.event[\releaseTime]) }
+			^{ this.release(eventModel.event[\fadeTime]) }
 		}{
 			^{ this.free }
 		}

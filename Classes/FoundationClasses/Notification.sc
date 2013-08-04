@@ -109,12 +109,10 @@ Notification {
 	it explicitly: Notification(notifier, message, this, action) */
 
 	addNotifier { | notifier, message, action |
-//		^Notification(notifier, message, this, action);
 		Notification(notifier, message, this, action);
 	}
 
 	removeNotifier { | notifier, message |
-//		^Notification.remove(notifier, message, this);
 		Notification.remove(notifier, message, this);
 	}
 
@@ -122,13 +120,11 @@ Notification {
 	// then add notifier, message
 	replaceNotifier { | notifier, message, action |
 		this removeMessage: message;
-//		^this.addNotifier(notifier, message, action);
 		this.addNotifier(notifier, message, action);
 	}
 
 	// remove any notifiers that send me message
 	removeMessage { | message |
-//		^Notification.removeMessage(message, this);
 		Notification.removeMessage(message, this);
 	}
 
@@ -140,10 +136,6 @@ Notification {
 	}
 
 	addNotifierOneShot { | notifier, message, action |
-//		^Notification(notifier, message, this, { | ... args |
-//			action.(*args); //action.(args);
-//			args.last.remove;
-//		});
 		Notification(notifier, message, this, { | ... args |
 			action.(*args); //action.(args);
 			args.last.remove;
@@ -162,6 +154,12 @@ Notification {
 
 	addNotifierSwitch { | switch, message, action, setAction, unsetAction |
 		switch.addListener(this, message, action, setAction, unsetAction);
+	}
+
+	addNotifierSetActions { | switch, notNilAction, nilAction |
+		this.addNotifier(switch, \notifier, { | notifier |
+			if (notifier.notNil) { notNilAction.(this, notifier) } { nilAction.(this, notifier) }
+		})
 	}
 }
 

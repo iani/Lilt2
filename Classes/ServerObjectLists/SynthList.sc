@@ -106,8 +106,6 @@ SynthListGui {
 
 	init {
 		modelSwitcher = NotifierSwitch(this, \synthModel, { | model |
-			[this, thisMethod.name, "experimental use of NotifierSwitch", model].postln;
-			// if (model.isNil) { model } { model.eventModel.event };
 			model
 		});
 
@@ -118,7 +116,24 @@ SynthListGui {
 				listView = ListView().minWidth_(120),
 				VLayout(
 					guiButton = Button().states_([["gui"]]),
-					// TODO: change button states according to whether synth has gate or not
+					Button().states_([["gui"]])
+					.action_({ modelSwitcher.notifier.gui })
+					.addNotifierSetActions(modelSwitcher, _.enabled_(true), _.enabled_(false)),
+					Button().states_([["start", Color.green], ["fade out", Color.red]])
+					.action_({ | v |
+						if (v.value > 0) {
+							modelSwitcher.notifier.start;
+						}{
+							modelSwitcher.notifier.release;
+						}
+					})
+					.addNotifierSetActions(modelSwitcher, { | v |
+						v.states = modelSwitcher.notifier.makeStartButtonStates;
+						v.action = modelSwitcher.notifier.makeStartButtonAction;
+						v.enabled = true;
+						v.value = modelSwitcher.notifier.isPlaying.binaryValue;
+					}, _.enabled_(false)),
+
 					startButton = Button().states_([["start"], ["fade out"]]),
 					stopButton = Button().states_([["stop"]]),
 					pauseButton = Button().states_([["pause"], ["resume"]]),
@@ -141,8 +156,14 @@ SynthListGui {
 					.maxHeight_(20)
 					.addNotifierSwitch(modelSwitcher, \amp, { | val, notification |
 						notification.listener.value = val;
-						}, { | synthModel |
-							if (synthModel.isNil) { nil } { synthModel.eventModel.event; };
+						}, { | synthModel, theNumBox |
+							if (synthModel.isNil) {
+								theNumBox = 0;
+								nil
+							} {
+								theNumBox.value = synthModel.eventModel.event[\amp] ? 0;
+								synthModel.eventModel;
+							};
 						}
 					).action_({ | me |
 						modelSwitcher.notifier !? {
