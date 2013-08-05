@@ -82,11 +82,11 @@ SynthList {
 }
 
 SynthListGui {
-	classvar <>runningColor, <>stoppedColor, <pausedColor, ampSpec;
+	classvar <>runningColor, <>stoppedColor, <pausedColor, font;
 
 	var list; // SynthList holding registered SynthModels
 	var window, pauseButton;
-	var ampKnob, ampNumBox;
+	var ampSpec;
 	var <selected;
 
 	var <modelSwitcher; // for new version using NotifierSwitch
@@ -96,22 +96,22 @@ SynthListGui {
 		runningColor = Color(1, 0.5, 0.5);
 		stoppedColor = Color.white;
 		pausedColor = Color.gray(0.7);
-		Class.initClassTree(ControlSpec);
-		ampSpec = ControlSpec(0, 8, \lin, 0, 0);
-
+		StartUp add: { font = Font.default.size_(10); };
 	}
 	*new { | list |
 		^this.newCopyArgs(list).init;
 	}
 
 	init {
+		ampSpec = ControlSpec(0, 8, \lin, 0, 0);
 		modelSwitcher = NotifierSwitch(this, \synthModel, { | model |
 			model
 		});
 
 		window = Window("Synths", Rect(0, 0, 200, 300)).front;
 		window.layout = VLayout(
-			TextField()
+
+			TextField()  // View / Change the name of the selected SynthModel
 			.action_({ | me |
 				modelSwitcher.notifier !? {
 					modelSwitcher.notifier.name = me.string;
@@ -123,7 +123,10 @@ SynthListGui {
 				}, { | model, me |
 					if (model.isNil) { me.string = "" } { me.string = model.name }
 			}),
+
 			HLayout(
+
+				// List of SynthModels
 				ListView().minWidth_(120).font_(Font.default.size_(10))
 				.items_(list.getItemNames)
 				.action_({ | me | this.changed(\synthModel, list.list[me.value]) })
@@ -131,14 +134,27 @@ SynthListGui {
 					notification.listener.items = list.getItemNames;
 					notification.listener.value = list.list.indexOf(model) ? 0;
 					this.changed(\synthModel, model);
+				})
+				.addNotifier(list, \synthState, { | model, notification |
+					notification.listener.colors = list.list collect: { | sm |
+						if (sm.isPlaying) {
+							if (sm.isRunning) { runningColor } { pausedColor };
+						}{
+							stoppedColor
+						}
+					};
+					notification.listener.refresh;
 				}),
 				VLayout(
+
+					// Open GUI window for selected SynthModel
 					Button().states_([["gui"]])
 					.enabled_(false)
 					.action_({ modelSwitcher.notifier.gui })
 					.addNotifierSetActions(modelSwitcher, _.enabled_(true), _.enabled_(false)),
+
+					// Start / Release selected SynthModel
 					Button().states_([["start"], ["fade out"]])
-					// TODO:
 					.addNotifierSwitch(modelSwitcher, \synthStarted, { | notification |
 						notification.listener.value = 1;
 						}, { | model, view |
@@ -158,6 +174,7 @@ SynthListGui {
 						notification.listener.value = 0;
 					}),
 
+					// Stop (free) synth of selected SynthModel
 					Button().states_([["stop"]])
 					.action_({ modelSwitcher.notifier !? { modelSwitcher.notifier.free } })
 					.addNotifierSwitch(modelSwitcher, \synthStarted,
@@ -175,32 +192,68 @@ SynthListGui {
 					.addNotifierSwitch(modelSwitcher, \synthEnded, { | notification |
 						notification.listener.enabled_(false);
 					}),
-					pauseButton = Button().states_([["pause"], ["resume"]]),
-					ampKnob = Knob(),
-					ampNumBox = NumberBox(),
+
+					// Pause or resume synth of selected SynthModel
+					Button().states_([["resume"], ["pause"]])
+					.addNotifierSwitch(modelSwitcher, \synthStarted, { | notification |
+						notification.listener.enabled_(true).value_(1);
+						}, { | model, view |
+							if (model.isNil) {
+								view.value = 0;
+								view.enabled_(false);
+							}{
+								view.enabled = if (model.isPlaying) { true } { false };
+								view.value = model.isRunning.binaryValue;
+							};
+							model
+					})
+					.addNotifierSwitch(modelSwitcher, \synthEnded, { | notification |
+						notification.listener.value_(0).enabled_(false);
+					})
+					.action_({ | me |
+						modelSwitcher.notifier.run(me.value);
+					}),
+
+					StaticText().string_("amplitude:"),
+
+					// Set Amplitude of selected SynthModel
 					Slider()
 					.orientation_(\horizontal)
 					.maxHeight_(20)
 					.addNotifierSwitch(modelSwitcher, \amp, { | val, notification |
 						notification.listener.value = val;
-						}, { | synthModel |
-							if (synthModel.isNil) { nil } { synthModel.eventModel.event; };
+						}, { | model, view |
+							if (model.isNil) {
+								view.value = 0;
+								view.enabled = false;
+								nil
+							}{
+								view.enabled = true;
+								view.value = model.eventModel.at(\amp) ? 0;
+								model.eventModel;
+							};
 						}
-					).action_({ | me |
+					)
+					.action_({ | me |
 						modelSwitcher.notifier !? {
 							modelSwitcher.notifier.eventModel.put(\amp, me.value)
 						}
 					}),
+
+
+					// Display / Set Amplitude of selected SynthModel
 					NumberBox()
-					.maxHeight_(20)
+					.maxHeight_(20).clipLo_(0).clipHi_(10).decimals_(5).enabled_(false)
 					.addNotifierSwitch(modelSwitcher, \amp, { | val, notification |
 						notification.listener.value = val;
 						}, { | synthModel, theNumBox |
 							if (synthModel.isNil) {
-								theNumBox = 0;
+								theNumBox.enabled = false;
+								theNumBox.value = 0;
 								nil
 							} {
-								theNumBox.value = synthModel.eventModel.event[\amp] ? 0;
+								theNumBox.enabled = true;
+								theNumBox.value = synthModel.eventModel.at(\amp) ? 0;
 								synthModel.eventModel;
 							};
 						}
@@ -208,48 +261,20 @@ SynthListGui {
 						modelSwitcher.notifier !? {
 							modelSwitcher.notifier.eventModel.put(\amp, me.value)
 						}
-					})
+					}),
+
+					HLayout(
+						StaticText().string_("max amp:").font_(Font.default.size_(10)).fixedWidth_(50),
+						NumberBox().clipLo_(0.001).decimals_(3).fixedWidth_(35)
+						.font_(Font.default.size_(10))
+						.action_({ " not yet implemented".postln; })
+					)
 				)
 			)
 		);
-
-
-		pauseButton.action = { | me |
-			selected !? {
-				[{ selected.resume }, { selected.pause }][me.value].value;
-			}
+		window.onClose = {
+			this.objectClosed;
+			modelSwitcher.objectClosed;
 		};
-
-		ampKnob.action_({ | me |
-			var val;
-			val = ampSpec.map(me.value);
-			ampNumBox.value = val;
-			selected !? { selected.put(\amp, val); };
-		});
-
-		ampNumBox.action_({ | me |
-			var val;
-			val = me.value;
-			ampKnob.value = ampSpec.unmap(val);
-			selected !? { selected.put(\amp, me.val) };
-		});
-
-		this.addNotifier(list, \synthState, { | model |
-//			this.updateListColors;
-			if (model === selected) { this.updateButtonStates; }
-		});
-		window.onClose = { this.objectClosed; };
 	}
-/*
-	updateListColors {
-		listView.colors = list.list collect: { | sm |
-			if (sm.isPlaying) {
-				if (sm.isRunning) { runningColor } { pausedColor };
-			}{
-				stoppedColor
-			}
-		};
-		listView.refresh;
-	}
-*/
 }
