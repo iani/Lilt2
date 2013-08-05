@@ -102,12 +102,44 @@ SynthListGui {
 		^this.newCopyArgs(list).init;
 	}
 
-	init {
-		ampSpec = ControlSpec(0, 8, \lin, 0, 0);
-		modelSwitcher = NotifierSwitch(this, \synthModel, { | model |
-			model
-		});
 
+/*
+// TODO: Rewrite layout using GridLayout like this:
+
+
+(
+w = Window("Synth Player", Rect(0, 0, 400, 290));
+w.view.layout = GridLayout.columns(
+	[
+		StaticText().string_("SynthDefs"),
+		[ListView(), rows: 8]
+	],
+	[
+		[HLayout(StaticText().string_("SynthModels"), TextField()), columns: 2],
+		[ListView(), rows: 8]
+	],
+	[
+		nil,
+		Button().states_([["gui"]]),
+		Button().states_([["start"], ["fade out"]]),
+		Button().states_([["stop"]]),
+		Button().states_([["pause"], ["resume"]]),
+		StaticText().string_("amplitude:"),
+		Slider().orientation_(\horizontal),
+		NumberBox(),
+		HLayout(
+			StaticText().string_("max amp:").fixedWidth_(50),
+			NumberBox().fixedWidth_(40)
+		)
+]);
+w.front;
+)
+
+*/
+
+	init {
+		this.makeSpec;
+		modelSwitcher = NotifierSwitch(this, \synthModel, { | model | model });
 		window = Window("Synths", Rect(0, 0, 200, 300)).front;
 		window.layout = VLayout(
 
@@ -221,7 +253,7 @@ SynthListGui {
 					.orientation_(\horizontal)
 					.maxHeight_(20)
 					.addNotifierSwitch(modelSwitcher, \amp, { | val, notification |
-						notification.listener.value = val;
+						notification.listener.value = ampSpec.unmap(val ? 0);
 						}, { | model, view |
 							if (model.isNil) {
 								view.value = 0;
@@ -229,14 +261,17 @@ SynthListGui {
 								nil
 							}{
 								view.enabled = true;
-								view.value = model.eventModel.at(\amp) ? 0;
+								view.value = ampSpec.unmap(model.eventModel.at(\amp) ? 0);
 								model.eventModel;
 							};
 						}
 					)
+					.addNotifier(this, \spec, { | max, notification |
+						notification.listener.clipHi = max;
+					})
 					.action_({ | me |
 						modelSwitcher.notifier !? {
-							modelSwitcher.notifier.eventModel.put(\amp, me.value)
+							modelSwitcher.notifier.eventModel.put(\amp, ampSpec.map(me.value))
 						}
 					}),
 
@@ -257,17 +292,22 @@ SynthListGui {
 								synthModel.eventModel;
 							};
 						}
-					).action_({ | me |
+					)
+					.addNotifier(this, \spec, { | max, notification |
+						notification.listener.clipHi = max;
+					})
+					.action_({ | me |
 						modelSwitcher.notifier !? {
 							modelSwitcher.notifier.eventModel.put(\amp, me.value)
 						}
 					}),
 
+					// Set maximum amplitude limit for Slider and Number Box.
 					HLayout(
 						StaticText().string_("max amp:").font_(Font.default.size_(10)).fixedWidth_(50),
 						NumberBox().clipLo_(0.001).decimals_(3).fixedWidth_(35)
-						.font_(Font.default.size_(10))
-						.action_({ " not yet implemented".postln; })
+						.font_(Font.default.size_(10)).value_(ampSpec.maxval)
+						.action_({ | me | this.makeSpec(me.value); })
 					)
 				)
 			)
@@ -276,5 +316,10 @@ SynthListGui {
 			this.objectClosed;
 			modelSwitcher.objectClosed;
 		};
+	}
+
+	makeSpec { | max = 2 |
+		ampSpec = ControlSpec(0.0, max, \amp, 0, 0);
+		this.changed(\spec, max);
 	}
 }
