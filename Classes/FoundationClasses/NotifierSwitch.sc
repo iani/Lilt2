@@ -57,8 +57,8 @@ NotifierSwitch {
 		listener.removeMessage(message);
 		/* The above removes all notifiers on this message for this listener
 		   Can we store the previous individual notifier to remove it?
-		   However, objects using NotificationSwitch do this to
-		   receive a message from one notifier at a time.
+		   However, message/listener object combinations added via NotificationSwitch
+		   are by default meant to listen to one notifier at a time.
 		   So it is probably superfluous to do individual removal */
 		getNotifierAction = getNotifierAction ? getIndividualNotifierAction;
 		notificationTemplates.put(
@@ -76,3 +76,17 @@ NotifierSwitch {
 		super.objectClosed;
 	}
 }
+
++ Object {
+
+	addNotifierSwitch { | switch, message, action, getNotifierAction |
+		switch.addListener(this, message, action, getNotifierAction);
+	}
+
+	addNotifierSetActions { | switch, notNilAction, nilAction |
+		this.addNotifier(switch, \notifier, { | notifier |
+			if (notifier.notNil) { notNilAction.(this, notifier) } { nilAction.(this, notifier) }
+		})
+	}
+}
+
