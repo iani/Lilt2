@@ -37,7 +37,7 @@ Example:
 
 anObject.objectClosed : remove all notifiers and listeners from / to anObject.
 
-Further methods for adding and removing notifiers/listeners are more or lest self-explanatoryl
+Further methods for adding and removing notifiers/listeners are more or less self-explanatory
 
 
 */
@@ -133,6 +133,12 @@ Notification {
 		Notification.removeNotifiersOf(this);
 		Notification.removeListenersOf(this);
 		this.releaseDependants;
+	}
+
+	onObjectClosed { | action |
+		this.addDependant({ | changer, changed |
+			if (changed === \objectClosed and: { changer === this }) { action.(this) }
+		})
 	}
 
 	addNotifierOneShot { | notifier, message, action |
