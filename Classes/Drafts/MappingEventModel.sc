@@ -8,31 +8,28 @@ See also: Class Mapper.
 
 */
 
-MappingEventModel : EventModel {
+MappingEventModel {
 
-//	var <event;
-//	var <specs;
+	var <event;
+	var <specs;
 
-	*new { | event, specs |
-		^this.newCopyArgs(event ?? { () }, specs ?? { () })
+	*new { | event |
+		^this.newCopyArgs(event ?? { () })
 	}
 
-	addSpecs { | argSpecs |
-		argSpecs keysValuesDo: { | key, value | specs[key] = value.asSpec; };
-	}
+	// addSpecs { | argSpecs |
+	// 	argSpecs keysValuesDo: { | key, value | specs[key] = value.asSpec; };
+	// }
 
 	keys { ^event.keys }
 
 	put { | key, value |
 		event.at(key).value = value;
-//		event.put(key, value);
-//		this.changed(key, value);
 	}
 
 	mapPut { | key, value |
 		// map the value from 0..1 to the range specified by spec, then store.
 		event.at(key).unmappedValue = value;
-//		thisMethod.notYetImplemented;
 	}
 
 	at { | key | ^event.at(key).value }

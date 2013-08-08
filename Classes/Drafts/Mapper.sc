@@ -3,13 +3,10 @@
 Encapsulate the spec, unmapped value and mapped value so that they are stored together, and so that mapping or unmapping only happens once, at value update time.
 
 (
-m = Mapper(\freq);
 w = Window();
-w.view.layout = m.numSlider;
+w.view.layout = VLayout(*([\freq, \amp, \pan, \rq, \level] collect: { | n | Mapper(n).numSlider }));
 w.front;
 )
-
-TODO: Consider: Adapter should use Notification with \value (!) as message. Reason is that we may want to change other aspects of a view, via the Mapper. For example: change clipHi and clipLo in response to change of spec. Enable or disable view.
 
 */
 
@@ -33,13 +30,17 @@ Mapper {
 	value_ { | argValue = 0 |
 		value = argValue;
 		unmappedValue = spec.unmap(value);
-		this.changed;
+		this.broadcastValue;
 	}
 
+	broadcastValue {
+		// subclasses add more to this
+		this.changed(\value);
+	}
 	unmappedValue_ { | argUnmappedValue = 0 |
 		unmappedValue = argUnmappedValue;
 		value = spec.map(unmappedValue);
-		this.changed;
+		this.broadcastValue;
 	}
 
 	numberBox { | width = 50 |
@@ -54,16 +55,16 @@ Mapper {
 		^Knob().addModel(this);
 	}
 
-	numSlider { | labelWidth = 100 |
+	numSlider {
 		^HLayout(
-			StaticText().string_(name).fixedWidth_(labelWidth),
+			this.staticText,
 			this.numberBox,
 			this.slider
 		)
 	}
 
-	staticText {
-		thisMethod.notYetImplemented;
+	staticText { | labelWidth = 100 |
+		^StaticText().string_(name).fixedWidth_(labelWidth);
 	}
 
 	updatingStaticText {
@@ -71,6 +72,19 @@ Mapper {
 	}
 
 }
+
+
+SynthParameter : Mapper {
+	var <synthModel;
+	var <mapBusConnector;  // BusConnector: A bus to which this control may be mapped
+
+	broadcastValue {
+		synthModel.set(name, value);
+		super.broadcastValue;
+	}
+
+}
+
 
 Adapter {
 	var <model, <view;
@@ -80,12 +94,11 @@ Adapter {
 	}
 
 	init {
-		model.addDependant(this);
+		this.addNotifier(model, \value, { this.update });
 		view.action = { this.sendValueToModel };
-		view.onClose = {
-			model.removeDependant(this);
-			view.objectClosed;
-		};
+		view.onClose = { view.objectClosed; };
+		// Works even if onClose is overwritten by addNotifier:
+		view.onObjectClosed({ this.objectClosed; });
 		this.update;
 	}
 
@@ -94,7 +107,7 @@ Adapter {
 	update { view.value = model.value }
 
 	model_ { | argModel |
-		model !? { model.removeDependant(this); };
+		model !? { this.removeNotifier(this, \value); };
 		model = argModel;
 		this.init;
 	}
